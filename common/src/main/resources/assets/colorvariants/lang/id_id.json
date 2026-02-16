@@ -1,0 +1,19 @@
+{
+  "item.colorvariants.color_wand": "Tongkat Warna",
+  "item.colorvariants.color_wand.tooltip.1": "Klik kanan blok untuk mengubah warnanya",
+  "item.colorvariants.color_wand.tooltip.2": "Bekerja dengan blok apa pun!",
+  
+  "item.colorvariants.color_palette": "Palet Warna",
+  "item.colorvariants.color_palette.stored": "Warna Tersimpan:",
+  "item.colorvariants.color_palette.empty": "Tidak ada warna tersimpan",
+  "item.colorvariants.color_palette.tooltip": "Shift + Klik kanan untuk menghapus",
+  "item.colorvariants.color_palette.cleared": "Palet warna dihapus",
+  
+  "gui.colorvariants.color_picker.title": "Pemilih Warna",
+  "gui.colorvariants.hue": "Hue",
+  "gui.colorvariants.saturation": "Saturasi",
+  "gui.colorvariants.brightness": "Kecerahan",
+  "gui.colorvariants.apply": "Terapkan",
+  "gui.colorvariants.reset": "Reset",
+  "gui.colorvariants.cancel": "Batal"
+}

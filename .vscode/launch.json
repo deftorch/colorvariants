@@ -1,0 +1,105 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Fabric Client (:fabric)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/run",
+      "console": "integratedTerminal",
+      "stopOnEntry": false,
+      "mainClass": "net.fabricmc.devlaunchinjector.Main",
+      "vmArgs": "-Dfabric.dli.config\u003d/home/deftorch/Project/colorvariants/fabric/.gradle/loom-cache/launch.cfg -Dfabric.dli.env\u003dclient -Dfabric.dli.main\u003dnet.fabricmc.loader.impl.launch.knot.KnotClient",
+      "args": "",
+      "env": {},
+      "projectName": "fabric",
+      "runDir": "/home/deftorch/Project/colorvariants/fabric/run"
+    },
+    {
+      "type": "java",
+      "name": "Fabric Server (:fabric)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/run",
+      "console": "integratedTerminal",
+      "stopOnEntry": false,
+      "mainClass": "net.fabricmc.devlaunchinjector.Main",
+      "vmArgs": "-Dfabric.dli.config\u003d/home/deftorch/Project/colorvariants/fabric/.gradle/loom-cache/launch.cfg -Dfabric.dli.env\u003dserver -Dfabric.dli.main\u003dnet.fabricmc.loader.impl.launch.knot.KnotServer",
+      "args": "nogui nogui",
+      "env": {},
+      "projectName": "fabric",
+      "runDir": "/home/deftorch/Project/colorvariants/fabric/run"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "forge - Client",
+      "presentation": {
+        "group": "Mod Development - forge",
+        "order": 0
+      },
+      "projectName": "forge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@/home/deftorch/Project/colorvariants/forge/build/moddev/clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@/home/deftorch/Project/colorvariants/forge/build/moddev/clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dcolorvariants%%/home/deftorch/Project/colorvariants/forge/bin/main"
+      ],
+      "cwd": "${workspaceFolder}/forge/run",
+      "env": {
+        "MOD_CLASSES": "colorvariants%%/home/deftorch/Project/colorvariants/forge/bin/main"
+      },
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "forge - Data",
+      "presentation": {
+        "group": "Mod Development - forge",
+        "order": 1
+      },
+      "projectName": "forge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@/home/deftorch/Project/colorvariants/forge/build/moddev/dataRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@/home/deftorch/Project/colorvariants/forge/build/moddev/dataRunVmArgs.txt",
+        "-Dfml.modFolders\u003dcolorvariants%%/home/deftorch/Project/colorvariants/forge/bin/main"
+      ],
+      "cwd": "${workspaceFolder}/forge/run",
+      "env": {
+        "MOD_CLASSES": "colorvariants%%/home/deftorch/Project/colorvariants/forge/bin/main"
+      },
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "forge - Server",
+      "presentation": {
+        "group": "Mod Development - forge",
+        "order": 2
+      },
+      "projectName": "forge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@/home/deftorch/Project/colorvariants/forge/build/moddev/serverRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@/home/deftorch/Project/colorvariants/forge/build/moddev/serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dcolorvariants%%/home/deftorch/Project/colorvariants/forge/bin/main"
+      ],
+      "cwd": "${workspaceFolder}/forge/run",
+      "env": {
+        "MOD_CLASSES": "colorvariants%%/home/deftorch/Project/colorvariants/forge/bin/main"
+      },
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    }
+  ]
+}
