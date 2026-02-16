@@ -171,19 +171,27 @@ public class TextureGenerator {
     /**
      * Loads a texture as a NativeImage.
      */
-    private NativeImage loadTexture(ResourceLocation location) {
+    private NativeImage loadTexture(ResourceLocation spriteLocation) {
         try {
             var resourceManager = Minecraft.getInstance().getResourceManager();
-            var resource = resourceManager.getResource(location);
+            
+            // FIX: Convert Sprite ID (namespace:path) to File Path (namespace:textures/path.png)
+            ResourceLocation fileLocation = new ResourceLocation(
+                spriteLocation.getNamespace(),
+                "textures/" + spriteLocation.getPath() + ".png"
+            );
+            
+            var resource = resourceManager.getResource(fileLocation);
             
             if (resource.isPresent()) {
                 return NativeImage.read(resource.get().open());
             }
             
+            LOGGER.warn("Texture file not found: {}", fileLocation);
             return null;
             
         } catch (Exception e) {
-            LOGGER.error("Error loading texture: " + location, e);
+            LOGGER.error("Error loading texture: " + spriteLocation, e);
             return null;
         }
     }

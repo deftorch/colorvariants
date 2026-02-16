@@ -51,35 +51,37 @@ public class ColorUpdatePacket {
     public static void handle(ColorUpdatePacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
-            if (player == null)
-                return;
+            if (player == null) return;
 
             ServerLevel level = player.serverLevel();
 
-            // Update the manager
+            // 1. Save data to Manager
             ColorTransformManager manager = ColorTransformManager.get(level);
             manager.setTransform(packet.pos, packet.transform);
 
-            // Create or get block entity
+            // 2. FORCE UPDATE BLOCKSTATE (Important for client to know about changes)
+            // Send block update to rerender chunk
+            level.sendBlockUpdated(packet.pos, level.getBlockState(packet.pos), level.getBlockState(packet.pos), 3);
+
+            // 3. Handle Block Entity if needed (though MixinBlockBehavior should handle capability)
             BlockEntity blockEntity = level.getBlockEntity(packet.pos);
 
-            if (!(blockEntity instanceof ColoredBlockEntity)) {
-                // Create new block entity
-                ColoredBlockEntity coloredBE = new ColoredBlockEntity(
-                        packet.pos,
-                        level.getBlockState(packet.pos));
+            if (blockEntity instanceof ColoredBlockEntity coloredBE) {
                 coloredBE.setTransform(packet.transform);
-                level.setBlockEntity(coloredBE);
+                coloredBE.setChanged();
             } else {
-                // Update existing block entity
-                ((ColoredBlockEntity) blockEntity).setTransform(packet.transform);
+                // Should be handled by MixinBlockBehavior allowing the BE to exist
+                // But we can try to set it if it's missing (might fail without mixin)
+                try {
+                    ColoredBlockEntity newBE = new ColoredBlockEntity(packet.pos, level.getBlockState(packet.pos));
+                    newBE.setTransform(packet.transform);
+                    level.setBlockEntity(newBE);
+                } catch (Exception e) {
+                   // Ignore if we can't set it (e.g. vanilla block checks)
+                }
             }
-
-            // Sync to all clients
-            ColorSyncPacket syncPacket = new ColorSyncPacket(packet.pos, packet.transform);
-            PacketHandler.sendToAll(syncPacket);
         });
-
+        
         ctx.setPacketHandled(true);
     }
 }

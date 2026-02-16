@@ -68,10 +68,10 @@ public class TextureCache {
     }
 
     private boolean isCacheEnabled() {
-        return ModConfig.CACHE_ENABLED;
+        return ModConfig.isCacheEnabled();
     }
 
     private int getMaxCacheSize() {
-        return ModConfig.MAX_CACHE_SIZE;
+        return ModConfig.getMaxCacheSize();
     }
 }
