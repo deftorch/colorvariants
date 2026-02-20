@@ -1,0 +1,388 @@
+name: CI/CD — Color Variants Mod
+
+on:
+  push:
+    branches: [ main, develop, 'fix/**', 'feat/**', 'refactor/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Daily at 06:00 UTC — triggers Jules daily analysis
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Jules task to trigger'
+        required: false
+        default: 'daily-analysis'
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  JAVA_VERSION: '17'
+  GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 1: Build & Compile
+  # ─────────────────────────────────────────────────────────────────
+  build:
+    name: 🔨 Build (${{ matrix.loader }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        loader: [fabric, forge]
+      fail-fast: false
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle/loom-cache
+          key: gradle-${{ runner.os }}-${{ matrix.loader }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-${{ matrix.loader }}-
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v3
+
+      - name: Grant Execute Permission
+        run: chmod +x gradlew
+
+      - name: Build (${{ matrix.loader }})
+        run: ./gradlew :${{ matrix.loader }}:build --info
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: colorvariants-${{ matrix.loader }}-${{ github.sha }}
+          path: ${{ matrix.loader }}/build/libs/*.jar
+          retention-days: 30
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 2: Unit Tests + Coverage
+  # ─────────────────────────────────────────────────────────────────
+  test:
+    name: 🧪 Tests & Coverage
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-test-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: gradle-${{ runner.os }}-test-
+
+      - name: Run Unit Tests
+        run: ./gradlew :common:test --info
+
+      - name: Generate Coverage Report
+        run: ./gradlew :common:jacocoTestReport
+
+      - name: Check Coverage Threshold
+        run: ./gradlew :common:jacocoTestCoverageVerification
+        # Fails if coverage drops below threshold defined in build.gradle
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Test Results
+          path: '**/build/test-results/**/*.xml'
+          reporter: java-junit
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-${{ github.sha }}
+          path: common/build/reports/jacoco/
+
+      - name: Coverage Comment on PR
+        uses: madrapps/jacoco-report@v1.6.1
+        if: github.event_name == 'pull_request'
+        with:
+          paths: common/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 70
+          min-coverage-changed-files: 80
+          title: '📊 Code Coverage Report'
+          update-comment: true
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 3: Code Quality
+  # ─────────────────────────────────────────────────────────────────
+  quality:
+    name: 🔍 Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ runner.os }}-quality-${{ hashFiles('**/*.gradle*') }}
+
+      - name: Run Checkstyle
+        run: ./gradlew :common:checkstyleMain :common:checkstyleTest
+        continue-on-error: true
+
+      - name: Run SpotBugs
+        run: ./gradlew :common:spotbugsMain
+        continue-on-error: true
+
+      - name: Upload Quality Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-reports-${{ github.sha }}
+          path: |
+            **/build/reports/checkstyle/
+            **/build/reports/spotbugs/
+
+      - name: Check for Static Fields in Items
+        run: |
+          echo "Checking for dangerous static mutable fields in item classes..."
+          if grep -rn "private static.*BlockPos\|private static.*ItemStack\|private static.*ServerPlayer" \
+            common/src/main/java/com/colorvariants/item/ 2>/dev/null; then
+            echo "❌ CRITICAL: Found static mutable state in item classes!"
+            exit 1
+          else
+            echo "✅ No dangerous static fields found in item classes"
+          fi
+
+      - name: Check Thread Safety
+        run: |
+          echo "Checking for non-thread-safe collections in managers..."
+          if grep -rn "new HashMap\|new ArrayList\|new LinkedList" \
+            common/src/main/java/com/colorvariants/core/ 2>/dev/null; then
+            echo "⚠️ WARNING: Found potentially non-thread-safe collections in core managers"
+            echo "Consider using ConcurrentHashMap or synchronization"
+          fi
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 4: Security Scan
+  # ─────────────────────────────────────────────────────────────────
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Scan for Missing Server Validation
+        run: |
+          echo "Checking packet handlers for server validation..."
+          MISSING=$(grep -rn "public static void handle" \
+            common/src/main/java/com/colorvariants/network/ 2>/dev/null | \
+            xargs -I{} sh -c 'file=$(echo "{}" | cut -d: -f1); \
+            if ! grep -q "distanceTo\|isOp\|hasPermission\|MAX_DISTANCE" "$file"; then \
+              echo "MISSING VALIDATION: $file"; fi')
+          if [ -n "$MISSING" ]; then
+            echo "❌ Found packet handlers without server validation:"
+            echo "$MISSING"
+            exit 1
+          else
+            echo "✅ All packet handlers have validation checks"
+          fi
+
+      - name: Scan Dependencies for Vulnerabilities
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'colorvariants'
+          path: '.'
+          format: 'HTML'
+          args: '--suppression suppression.xml'
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 5: PR Validation
+  # ─────────────────────────────────────────────────────────────────
+  pr-validation:
+    name: 📋 PR Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Validate PR Title Format
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: fix, feat, refactor, test, docs, chore, perf
+          scopes: rendering, security, network, items, config, compat, core, build, ci
+
+      - name: Check for Test Coverage
+        uses: actions/checkout@v4
+
+      - name: Verify Tests Exist for Bug Fixes
+        run: |
+          # If PR title contains "fix", ensure test files were modified
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          if [[ "$PR_TITLE" == fix* ]]; then
+            CHANGED_TESTS=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -c "Test.java" || true)
+            if [ "$CHANGED_TESTS" -eq 0 ]; then
+              echo "⚠️ WARNING: This is a bug fix PR but no test files were changed."
+              echo "Please add a regression test for the bug you fixed."
+            else
+              echo "✅ Test files updated: $CHANGED_TESTS test file(s) modified"
+            fi
+          fi
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 6: Daily Jules Analysis (Scheduled)
+  # ─────────────────────────────────────────────────────────────────
+  daily-analysis:
+    name: 🤖 Daily Jules Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'daily-analysis')
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Run Daily Checks
+        run: |
+          echo "=== 📅 DAILY ANALYSIS REPORT $(date '+%Y-%m-%d') ===" 
+
+          echo ""
+          echo "--- TODO/FIXME scan ---"
+          grep -rn "TODO\|FIXME\|HACK\|XXX\|TEMP\|BUG" \
+            common/src/main/java/ fabric/src/main/java/ 2>/dev/null | \
+            head -50 || echo "No TODO/FIXME found"
+
+          echo ""
+          echo "--- Dangerous patterns scan ---"
+          echo "Static mutable fields in items:"
+          grep -rn "private static.*=" \
+            common/src/main/java/com/colorvariants/item/ 2>/dev/null || echo "None found"
+
+          echo ""
+          echo "--- Missing Javadoc scan (public methods) ---"
+          grep -rn "public.*(" \
+            common/src/main/java/com/colorvariants/ 2>/dev/null | \
+            grep -v "\/\*\*\|@\|test\|Test" | wc -l
+          echo "public methods may need Javadoc (manual verification needed)"
+
+          echo ""
+          echo "--- Deprecated API usage ---"
+          grep -rn "@Deprecated\|\.deprecated\." \
+            common/src/main/java/ 2>/dev/null || echo "None found"
+
+      - name: Build Report Summary
+        run: |
+          ./gradlew :common:compileJava 2>&1 | grep -E "warning:|error:" | head -30 || true
+
+      - name: Create Daily Issue (if problems found)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().split('T')[0];
+            const title = `🤖 Daily Analysis Report — ${today}`;
+
+            // Only create issue if it doesn't already exist today
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'daily-analysis',
+              state: 'open'
+            });
+
+            const alreadyExists = issues.data.some(i => i.title.includes(today));
+            if (!alreadyExists) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: `## 📅 Daily Analysis — ${today}\n\nThis issue was auto-generated by the daily CI analysis.\n\nJules should:\n1. Review this report\n2. Fix any new TODO/FIXME items\n3. Address any compilation warnings\n4. Check for any new code quality issues\n\nSee workflow run for full details.`,
+                labels: ['daily-analysis', 'jules-task']
+              });
+            }
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 7: Release
+  # ─────────────────────────────────────────────────────────────────
+  release:
+    name: 🚀 Release
+    runs-on: ubuntu-latest
+    needs: [build, test, quality, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Build Release JARs
+        run: |
+          ./gradlew :fabric:build :forge:build
+          ls -la fabric/build/libs/ forge/build/libs/
+
+      - name: Extract Version
+        id: version
+        run: |
+          VERSION=$(grep "^mod_version" gradle.properties | cut -d= -f2 | tr -d ' ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Color Variants v${{ steps.version.outputs.version }}
+          files: |
+            fabric/build/libs/*.jar
+            forge/build/libs/*.jar
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
