@@ -648,30 +648,6 @@ P3 Future:    [░░░░░░░░░░░░░░░░░░░░] 0/1
 - [ ] Review roadmap progress
 - [ ] Archive completed tasks
 
----
-
-## 📋 Quick Reference
-
-### Next 3 Tasks to Tackle
-
-1. **#012** Fix Area Selector MP bug (4h) — Easiest P0, start here
-2. **#006** Add ColorUpdatePacket validation (1d) — Critical security
-3. **#001** Implement rendering system (2-3w) — Main blocker
-
-### Current Blockers
-
-- **#001 Rendering** blocks: #002, #003, #004, #005, #018, #019, #027
-- **#012 Area Selector** blocks: #026
-
-### Who Does What
-
-| Task Type | Assignee | Priority |
-|-----------|----------|----------|
-| Rendering, Architecture | Lead Dev | P0 |
-| Security, Tests, Quality | Jules | P0-P1 |
-| Compatibility, Features | Community | P1-P2 |
-| Documentation | Jules + Community | P1 |
-| Performance | Lead Dev + QA | P1 |
 
 ---
 
