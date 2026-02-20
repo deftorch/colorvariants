@@ -1,6 +1,7 @@
 plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
+    id 'jacoco'
 }
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
@@ -12,6 +13,13 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":common")
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 loom {

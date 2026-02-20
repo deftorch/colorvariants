@@ -65,6 +65,11 @@ public class AreaColorUpdatePacket {
         return new AreaColorUpdatePacket(positions, transform, sameTypeOnly);
     }
 
+    // Validation constants
+    private static final double MAX_DISTANCE = 64.0;
+    private static final double MAX_DISTANCE_SQ = MAX_DISTANCE * MAX_DISTANCE;
+    private static final int MAX_BLOCKS = 32768; // Max blocks in a 32x32x32 area
+
     /**
      * Handles the packet on the server side.
      */
@@ -77,7 +82,31 @@ public class AreaColorUpdatePacket {
             if (player == null)
                 return;
 
+            // Security check: Validate size
+            if (packet.positions.size() > MAX_BLOCKS) {
+                com.colorvariants.Constants.LOG.warn("Player {} tried to update too many blocks: {}", player.getName().getString(), packet.positions.size());
+                return;
+            }
+
+            // Security check: Validate distance of first block (basic check)
+            if (!packet.positions.isEmpty()) {
+                BlockPos first = packet.positions.get(0);
+                if (player.distanceToSqr(first.getX() + 0.5, first.getY() + 0.5, first.getZ() + 0.5) > MAX_DISTANCE_SQ) {
+                    com.colorvariants.Constants.LOG.warn("Player {} tried to area update too far away: {}", player.getName().getString(), first);
+                    return;
+                }
+            }
+
             Level world = player.level();
+
+            // Additional check: Ensure all chunks are loaded to prevent loading exploits
+            for (BlockPos pos : packet.positions) {
+                if (!world.hasChunkAt(pos)) {
+                     com.colorvariants.Constants.LOG.warn("Player {} tried to update unloaded area: {}", player.getName().getString(), pos);
+                     return;
+                }
+            }
+
             ColorTransformManager manager = ColorTransformManager.get(world);
 
             if (packet.sameTypeOnly && !packet.positions.isEmpty()) {

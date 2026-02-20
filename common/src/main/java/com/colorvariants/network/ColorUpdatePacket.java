@@ -45,6 +45,10 @@ public class ColorUpdatePacket {
         return new ColorUpdatePacket(pos, new ColorTransform(hue, sat, bright));
     }
 
+    // Validation constants
+    private static final double MAX_DISTANCE = 64.0;
+    private static final double MAX_DISTANCE_SQ = MAX_DISTANCE * MAX_DISTANCE;
+
     /**
      * Handles the packet on the server side.
      */
@@ -54,6 +58,18 @@ public class ColorUpdatePacket {
             if (player == null) return;
 
             ServerLevel level = player.serverLevel();
+
+            // Security check: Validate distance
+            if (player.distanceToSqr(packet.pos.getX() + 0.5, packet.pos.getY() + 0.5, packet.pos.getZ() + 0.5) > MAX_DISTANCE_SQ) {
+                com.colorvariants.Constants.LOG.warn("Player {} tried to update color too far away: {}", player.getName().getString(), packet.pos);
+                return;
+            }
+
+            // Security check: Validate permission
+            if (!player.hasPermissions(2) && !level.hasChunkAt(packet.pos)) {
+                 com.colorvariants.Constants.LOG.warn("Player {} tried to update unloaded chunk: {}", player.getName().getString(), packet.pos);
+                 return;
+            }
 
             // 1. Save data to Manager
             ColorTransformManager manager = ColorTransformManager.get(level);

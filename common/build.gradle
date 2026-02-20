@@ -1,6 +1,7 @@
 plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev.legacyforge'
+    id 'jacoco'
 }
 
 legacyForge {
@@ -17,9 +18,25 @@ legacyForge {
 dependencies {
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.mockito:mockito-core:5.3.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Make jacocoTestReport depend on fabric tests and use its data
+jacocoTestReport {
+    dependsOn ":fabric:test"
+    executionData.setFrom(fileTree(dir: "${rootDir}/fabric/build/jacoco", include: "test.exec"))
+    // Ensure the report is generated even if common has no tests
+    onlyIf { true }
 }
 
 configurations {
+    testImplementation.extendsFrom compileOnly
     commonJava {
         canBeResolved = false
         canBeConsumed = true
