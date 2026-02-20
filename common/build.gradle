@@ -27,6 +27,14 @@ test {
     useJUnitPlatform()
 }
 
+// Make jacocoTestReport depend on fabric tests and use its data
+jacocoTestReport {
+    dependsOn ":fabric:test"
+    executionData.setFrom(fileTree(dir: "${rootDir}/fabric/build/jacoco", include: "test.exec"))
+    // Ensure the report is generated even if common has no tests
+    onlyIf { true }
+}
+
 configurations {
     testImplementation.extendsFrom compileOnly
     commonJava {
