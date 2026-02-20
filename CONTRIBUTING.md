@@ -1,11 +1,11 @@
 # Contributing to Color Variants Mod
 
-Panduan ini berlaku untuk **kontributor manusia** dan **Jules (Google AI Agent)**.
+Panduan ini berlaku untuk **kontributor manusia** dan **AI Agents*.
 
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/colorvariants
+git clone https://github.com/deftorch/colorvariants
 cd colorvariants
 ./gradlew build       # Verifikasi setup
 ./gradlew :fabric:runClient  # Test di game
@@ -146,9 +146,9 @@ void areaSelector_differentStacks_haveIndependentPositions() {
 
 ---
 
-## 🤖 Instruksi Khusus untuk Jules
+## 🤖 Instruksi Khusus untuk AI Agents
 
-Jules harus:
+AI Agents harus:
 1. **Selalu baca `AGENTS.md`** sebelum memulai task apapun
 2. **Selalu buat branch terpisah** untuk setiap fix (tidak boleh commit langsung ke develop/main)
 3. **Selalu tulis test** untuk setiap bug fix (minimum 1 regression test)
