@@ -22,9 +22,6 @@ import java.util.List;
  */
 public class AreaSelectorItem extends Item {
 
-    private static BlockPos firstPos = null;
-    private static BlockPos secondPos = null;
-
     public AreaSelectorItem(Properties properties) {
         super(properties);
     }
@@ -37,23 +34,25 @@ public class AreaSelectorItem extends Item {
             if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
                 BlockHitResult blockHit = (BlockHitResult) hitResult;
                 BlockPos pos = blockHit.getBlockPos();
+                ItemStack stack = player.getItemInHand(hand);
+                net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
 
                 if (player.isShiftKeyDown()) {
                     // Second position
-                    secondPos = pos;
+                    AreaSelectorState.setSecondPos(tag, pos);
                     player.displayClientMessage(
                             Component.translatable("item.colorvariants.area_selector.second_pos",
                                     pos.getX(), pos.getY(), pos.getZ()),
                             true);
 
                     // If both positions set, open GUI
-                    if (firstPos != null) {
-                        openAreaGUI(world, player);
+                    if (AreaSelectorState.getFirstPos(tag).isPresent()) {
+                        openAreaGUI(world, player, stack);
                     }
                 } else {
                     // First position
-                    firstPos = pos;
-                    secondPos = null;
+                    AreaSelectorState.setFirstPos(tag, pos);
+                    AreaSelectorState.removeSecondPos(tag);
                     player.displayClientMessage(
                             Component.translatable("item.colorvariants.area_selector.first_pos",
                                     pos.getX(), pos.getY(), pos.getZ()),
@@ -65,10 +64,14 @@ public class AreaSelectorItem extends Item {
         return InteractionResultHolder.success(player.getItemInHand(hand));
     }
 
-    private void openAreaGUI(Level world, Player player) {
-        if (firstPos != null && secondPos != null) {
+    private void openAreaGUI(Level world, Player player, ItemStack stack) {
+        net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+        java.util.Optional<BlockPos> p1 = AreaSelectorState.getFirstPos(tag);
+        java.util.Optional<BlockPos> p2 = AreaSelectorState.getSecondPos(tag);
+
+        if (p1.isPresent() && p2.isPresent()) {
             Minecraft.getInstance().setScreen(
-                    new AreaColorPickerScreen(firstPos, secondPos));
+                    new AreaColorPickerScreen(p1.get(), p2.get()));
         }
     }
 
@@ -80,15 +83,22 @@ public class AreaSelectorItem extends Item {
     }
 
     public static void reset() {
-        firstPos = null;
-        secondPos = null;
+        AreaSelectorState.reset();
     }
 
-    public static BlockPos getFirstPos() {
-        return firstPos;
+    public java.util.Optional<BlockPos> getFirstPos(ItemStack stack) {
+        return AreaSelectorState.getFirstPos(stack.getOrCreateTag());
     }
 
-    public static BlockPos getSecondPos() {
-        return secondPos;
+    public void setFirstPos(ItemStack stack, BlockPos pos) {
+        AreaSelectorState.setFirstPos(stack.getOrCreateTag(), pos);
+    }
+
+    public java.util.Optional<BlockPos> getSecondPos(ItemStack stack) {
+        return AreaSelectorState.getSecondPos(stack.getOrCreateTag());
+    }
+
+    public void setSecondPos(ItemStack stack, BlockPos pos) {
+        AreaSelectorState.setSecondPos(stack.getOrCreateTag(), pos);
     }
 }
