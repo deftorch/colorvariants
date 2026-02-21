@@ -1,0 +1,98 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :buildSrc:extractPluginRequests UP-TO-DATE
+> Task :buildSrc:generatePluginAdapters UP-TO-DATE
+> Task :buildSrc:compileJava UP-TO-DATE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:compileGroovyPlugins UP-TO-DATE
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+> Task :buildSrc:processResources UP-TO-DATE
+> Task :buildSrc:classes UP-TO-DATE
+> Task :buildSrc:jar UP-TO-DATE
+
+> Configure project :fabric
+Fabric Loom: 1.9.2
+
+> Task :common:createMinecraftArtifacts UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+
+> Task :forge:createMinecraftArtifacts
+Loaded 117 artifacts from /app/forge/build/tmp/createMinecraftArtifacts/nfrt_artifact_manifest.properties
+  [33mWARNING: [0mde.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip is not present in the artifact manifest
+  ↓ https://maven.neoforged.net/releases/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412.zip
+[1m*** Started working on [4mdownloadJson[0m[0m
+ [1m[92m✓[0m Completed [4mdownloadJson[0m in 0.02s
+[1m*** Started working on [4mdownloadServer[0m[0m
+[1m*** Started working on [4mdownloadClientMappings[0m[0m
+[1m*** Started working on [4mdownloadClient[0m[0m
+[1m*** Started working on [4mlistLibraries[0m[0m
+ [1m[92m♻[0m Used cache of [4mlistLibraries[0m in 0.01s
+ [1m[92m✓[0m Completed [4mdownloadClientMappings[0m in 0.07s
+ [1m[92m✓[0m Completed [4mdownloadClient[0m in 0.07s
+ [1m[92m✓[0m Completed [4mdownloadServer[0m in 0.07s
+[1m*** Started working on [4mmergeMappings[0m[0m
+ [1m[92m♻[0m Used cache of [4mmergeMappings[0m in 0.00s
+[1m*** Started working on [4mcreateMappings[0m[0m
+ [1m[92m♻[0m Used cache of [4mcreateMappings[0m in 0.00s
+[1m*** Started working on [4mstripClient[0m[0m
+ [1m[92m♻[0m Used cache of [4mstripClient[0m in 0.00s
+[1m*** Started working on [4mextractServer[0m[0m
+ [1m[92m♻[0m Used cache of [4mextractServer[0m in 0.00s
+[1m*** Started working on [4mstripServer[0m[0m
+ [1m[92m♻[0m Used cache of [4mstripServer[0m in 0.00s
+[1m*** Started working on [4mmerge[0m[0m
+ [1m[92m♻[0m Used cache of [4mmerge[0m in 0.00s
+[1m*** Started working on [4mrename[0m[0m
+ [1m[92m♻[0m Used cache of [4mrename[0m in 0.00s
+[1m*** Started working on [4mdecompile[0m[0m
+ [1m[92m♻[0m Used cache of [4mdecompile[0m in 0.00s
+[1m*** Started working on [4minject[0m[0m
+ [1m[92m✓[0m Completed [4minject[0m in 10.15s
+[1m*** Started working on [4mpatch[0m[0m
+ ↳ Running external tool io.codechicken:DiffPatch:2.0.0.36:all
+ [1m[92m✓[0m Completed [4mpatch[0m in 5.01s
+[1m*** Started working on [4mapplyNeoforgePatches[0m[0m
+ ↳ Running external tool io.codechicken:DiffPatch:2.0.0.36:all
+ [1m[92m✓[0m Completed [4mapplyNeoforgePatches[0m in 3.55s
+[1m*** Started working on [4mtransformSources[0m[0m
+ ↳ Running external tool net.neoforged.jst:jst-cli-bundle:1.0.66
+ [1m[92m✓[0m Completed [4mtransformSources[0m in 10.37s
+[1m*** Started working on [4mremapSrgSourcesToOfficial[0m[0m
+ [1m[92m✓[0m Completed [4mremapSrgSourcesToOfficial[0m in 7.22s
+[1m*** Started working on [4mapplyParchment[0m[0m
+ ↳ Running external tool net.neoforged.jst:jst-cli-bundle:1.0.66
+ [1m[92m✓[0m Completed [4mapplyParchment[0m in 24.17s
+[1m*** Started working on [4mrecompile[0m[0m
+  [33mWARNING: [0mnet.minecraftforge:mergetool:1.1.7:api is not present in the artifact manifest
+  [33mWARNING: [0morg.jetbrains:annotations:24.0.1 is not present in the artifact manifest
+  ↓ https://maven.neoforged.net/releases/org/jetbrains/annotations/24.0.1/annotations-24.0.1.jar
+ 96 items on the compile classpath
+ 0 items on the sourcepath
+ Compiling 5452 source files
+Copied 1274 resource files
+ [1m[92m✓[0m Completed [4mrecompile[0m in 43.38s
+[1m*** Started working on [4msourcesAndCompiledWithNeoForge[0m[0m
+ [1m[92m✓[0m Completed [4msourcesAndCompiledWithNeoForge[0m in 3.39s
+Total runtime: 111.31s
+
+
+> Task :forge:compileJava
+Note: SpongePowered MIXIN Annotation Processor Version=0.8.5 (MixinGradle Version=0.7)
+Note: Supported obfuscation types: ObfuscationServiceMCP supports [notch] ObfuscationServiceFG3 supports [searge]
+Note: Loading searge mappings from /app/forge/build/moddev/artifacts/namedToIntermediate.tsrg
+/app/common/src/main/java/com/colorvariants/mixin/MixinBlockBehavior.java:14: warning: Unable to determine descriptor for @Inject target method
+    @Inject(method = "hasBlockEntity", at = @At("HEAD"), cancellable = true)
+    ^
+Note: Writing refmap to /app/forge/build/mixin/colorvariants.refmap.json
+Note: Writing refmap to /app/forge/build/mixin/colorvariants.refmap.json
+Note: Writing searge composite mappings to /app/forge/build/mixin/colorvariants.refmap.json.mappings.tsrg
+Note: Writing refmap to /app/forge/build/mixin/colorvariants.refmap.json
+Note: Writing refmap to /app/forge/build/mixin/colorvariants.refmap.json
+Note: Writing searge composite mappings to /app/forge/build/mixin/colorvariants.refmap.json.mappings.tsrg
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+[Incubating] Problems report is available at: file:///app/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 2m 43s
+11 actionable tasks: 2 executed, 9 up-to-date
