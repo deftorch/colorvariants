@@ -1,0 +1,76 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :buildSrc:extractPluginRequests UP-TO-DATE
+> Task :buildSrc:generatePluginAdapters UP-TO-DATE
+> Task :buildSrc:compileJava UP-TO-DATE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:compileGroovyPlugins UP-TO-DATE
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+> Task :buildSrc:processResources UP-TO-DATE
+> Task :buildSrc:classes UP-TO-DATE
+> Task :buildSrc:jar UP-TO-DATE
+
+> Configure project :fabric
+Fabric Loom: 1.9.2
+
+> Task :common:createMinecraftArtifacts
+Loaded 86 artifacts from /app/common/build/tmp/createMinecraftArtifacts/nfrt_artifact_manifest.properties
+[1m*** Started working on [4mdownloadJson[0m[0m
+ [1m[92m✓[0m Completed [4mdownloadJson[0m in 0.03s
+[1m*** Started working on [4mdownloadServer[0m[0m
+[1m*** Started working on [4mdownloadClientMappings[0m[0m
+[1m*** Started working on [4mdownloadClient[0m[0m
+[1m*** Started working on [4mlistLibraries[0m[0m
+ [1m[92m♻[0m Used cache of [4mlistLibraries[0m in 0.00s
+ [1m[92m✓[0m Completed [4mdownloadClientMappings[0m in 0.04s
+ [1m[92m✓[0m Completed [4mdownloadServer[0m in 0.04s
+ [1m[92m✓[0m Completed [4mdownloadClient[0m in 0.04s
+[1m*** Started working on [4mmergeMappings[0m[0m
+ [1m[92m♻[0m Used cache of [4mmergeMappings[0m in 0.00s
+[1m*** Started working on [4mcreateMappings[0m[0m
+ [1m[92m♻[0m Used cache of [4mcreateMappings[0m in 0.00s
+[1m*** Started working on [4mstripClient[0m[0m
+ [1m[92m♻[0m Used cache of [4mstripClient[0m in 0.00s
+[1m*** Started working on [4mextractServer[0m[0m
+ [1m[92m♻[0m Used cache of [4mextractServer[0m in 0.00s
+[1m*** Started working on [4mstripServer[0m[0m
+ [1m[92m♻[0m Used cache of [4mstripServer[0m in 0.00s
+[1m*** Started working on [4mmerge[0m[0m
+ [1m[92m♻[0m Used cache of [4mmerge[0m in 0.00s
+[1m*** Started working on [4mrename[0m[0m
+ [1m[92m♻[0m Used cache of [4mrename[0m in 0.00s
+[1m*** Started working on [4mdecompile[0m[0m
+ [1m[92m♻[0m Used cache of [4mdecompile[0m in 0.00s
+[1m*** Started working on [4minject[0m[0m
+ [1m[92m♻[0m Used cache of [4minject[0m in 0.00s
+[1m*** Started working on [4mpatch[0m[0m
+ [1m[92m♻[0m Used cache of [4mpatch[0m in 0.00s
+[1m*** Started working on [4mremapSrgSourcesToOfficial[0m[0m
+ [1m[92m♻[0m Used cache of [4mremapSrgSourcesToOfficial[0m in 0.00s
+[1m*** Started working on [4mapplyParchment[0m[0m
+ [1m[92m♻[0m Used cache of [4mapplyParchment[0m in 0.00s
+[1m*** Started working on [4mrecompile[0m[0m
+  [33mWARNING: [0mnet.minecraftforge:mergetool:1.1.7:api is not present in the artifact manifest
+ 56 items on the compile classpath
+ 0 items on the sourcepath
+ Compiling 4787 source files
+Copied 0 resource files
+ [1m[92m✓[0m Completed [4mrecompile[0m in 40.19s
+[1m*** Started working on [4mmergeWithSources[0m[0m
+ [1m[92m✓[0m Completed [4mmergeWithSources[0m in 2.99s
+Total runtime: 45.38s
+
+
+> Task :common:compileJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :fabric:compileJava
+/app/common/src/main/java/com/colorvariants/mixin/MixinBlockBehavior.java:14: warning: Unable to determine descriptor for @Inject target method
+    @Inject(method = "hasBlockEntity", at = @At("HEAD"), cancellable = true)
+    ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /app/fabric/src/main/java/com/colorvariants/platform/FabricNetworkHelper.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+1 warning

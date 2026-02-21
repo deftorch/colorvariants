@@ -42,6 +42,13 @@ public class ColorTransform {
     public float getBrightness() {
         return brightness;
     }
+
+    /**
+     * Converts this transform to an ARGB color (applying it to white).
+     */
+    public int toARGB() {
+        return apply(0xFFFFFFFF);
+    }
     
     /**
      * Applies this color transform to an RGB color.
