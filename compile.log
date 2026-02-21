@@ -74,3 +74,7 @@ Note: Recompile with -Xlint:deprecation for details.
 Note: /app/fabric/src/main/java/com/colorvariants/platform/FabricNetworkHelper.java uses unchecked or unsafe operations.
 Note: Recompile with -Xlint:unchecked for details.
 1 warning
+[Incubating] Problems report is available at: file:///app/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 1m 38s
+10 actionable tasks: 3 executed, 7 up-to-date
