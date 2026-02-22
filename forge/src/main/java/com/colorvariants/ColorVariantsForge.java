@@ -25,9 +25,7 @@ public class ColorVariantsForge {
 
     private void clientSetup(final net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
-                    ColorVariants.COLORED_BLOCK_ENTITY.get(),
-                    com.colorvariants.client.renderer.ColoredBlockRenderer::new);
+            // Rendering is now handled via MixinBlockModelRenderer
         });
     }
 
