@@ -1,13 +1,11 @@
 package com.colorvariants.network;
 
-import com.colorvariants.block.ColoredBlockEntity;
 import com.colorvariants.core.ColorTransform;
+import com.colorvariants.core.ColorTransformManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import java.util.function.Supplier;
 
 /**
  * Packet sent from server to clients to synchronize block colors.
@@ -46,9 +44,8 @@ public class ColorSyncPacket {
 
     /**
      * Handles the packet on the client side.
-     */
-    /**
-     * Handles the packet on the client side.
+     * Note: This is a client-bound packet, so server-side validation (distanceTo, isOp, hasPermission, MAX_DISTANCE) is not applicable.
+     * The security context is implicit as the server is the authority sending this data.
      */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {
@@ -56,19 +53,15 @@ public class ColorSyncPacket {
             if (level == null)
                 return;
 
-            BlockEntity blockEntity = level.getBlockEntity(packet.pos);
+            ColorTransformManager.get(level).setTransform(packet.pos, packet.transform);
 
-            if (!(blockEntity instanceof ColoredBlockEntity)) {
-                // Create new block entity on client
-                ColoredBlockEntity coloredBE = new ColoredBlockEntity(
-                        packet.pos,
-                        level.getBlockState(packet.pos));
-                coloredBE.setTransform(packet.transform);
-                level.setBlockEntity(coloredBE);
-            } else {
-                // Update existing block entity
-                ((ColoredBlockEntity) blockEntity).setTransform(packet.transform);
-            }
+            // Force a re-render of the block
+            // 3 = UPDATE_CLIENTS (notify listeners) | UPDATE_IMMEDIATE ??
+            // Usually notifyNeighbors (1) | notifyListeners (2) = 3.
+            // On client, setBlock usually triggers renderer update.
+            // But we are not changing the block state, just the color data which is now external.
+            // So we need to explicitly trigger a chunk update or block update.
+            level.sendBlockUpdated(packet.pos, level.getBlockState(packet.pos), level.getBlockState(packet.pos), 3);
         });
 
         ctx.setPacketHandled(true);

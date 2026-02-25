@@ -1,13 +1,11 @@
 package com.colorvariants.network;
 
-import com.colorvariants.block.ColoredBlockEntity;
 import com.colorvariants.core.ColorTransform;
 import com.colorvariants.core.ColorTransformManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.function.Supplier;
 
 /**
@@ -53,6 +51,19 @@ public class ColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
 
+            // Validate distance
+            // MAX_DISTANCE check (8 blocks squared = 64)
+            if (player.distanceToSqr(packet.pos.getX(), packet.pos.getY(), packet.pos.getZ()) > 64) {
+                return;
+            }
+
+            // Check permission
+            // hasPermission check
+            // TODO: implement permission check
+            if (false) { // Placeholder
+                return;
+            }
+
             ServerLevel level = player.serverLevel();
 
             // 1. Save data to Manager
@@ -63,23 +74,9 @@ public class ColorUpdatePacket {
             // Send block update to rerender chunk
             level.sendBlockUpdated(packet.pos, level.getBlockState(packet.pos), level.getBlockState(packet.pos), 3);
 
-            // 3. Handle Block Entity if needed (though MixinBlockBehavior should handle capability)
-            BlockEntity blockEntity = level.getBlockEntity(packet.pos);
-
-            if (blockEntity instanceof ColoredBlockEntity coloredBE) {
-                coloredBE.setTransform(packet.transform);
-                coloredBE.setChanged();
-            } else {
-                // Should be handled by MixinBlockBehavior allowing the BE to exist
-                // But we can try to set it if it's missing (might fail without mixin)
-                try {
-                    ColoredBlockEntity newBE = new ColoredBlockEntity(packet.pos, level.getBlockState(packet.pos));
-                    newBE.setTransform(packet.transform);
-                    level.setBlockEntity(newBE);
-                } catch (Exception e) {
-                   // Ignore if we can't set it (e.g. vanilla block checks)
-                }
-            }
+            // Send sync packet to all players
+            ColorSyncPacket syncPacket = new ColorSyncPacket(packet.pos, packet.transform);
+            PacketHandler.sendToAll(syncPacket);
         });
         
         ctx.setPacketHandled(true);

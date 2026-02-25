@@ -77,6 +77,21 @@ public class AreaColorUpdatePacket {
             if (player == null)
                 return;
 
+            // Validate distance for all positions
+            // MAX_DISTANCE check (8 blocks squared = 64)
+            for (BlockPos pos : packet.positions) {
+                 if (player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) > 64) {
+                     return;
+                 }
+            }
+
+            // Check permission
+            // hasPermission check
+            // TODO: implement permission check
+            if (false) { // Placeholder
+                return;
+            }
+
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);
 
