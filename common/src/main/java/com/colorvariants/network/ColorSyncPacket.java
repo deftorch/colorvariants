@@ -44,6 +44,8 @@ public class ColorSyncPacket {
 
     /**
      * Handles the packet on the client side.
+     * Note: This is a client-bound packet, so server-side validation (distanceTo, isOp, hasPermission, MAX_DISTANCE) is not applicable.
+     * The security context is implicit as the server is the authority sending this data.
      */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {
