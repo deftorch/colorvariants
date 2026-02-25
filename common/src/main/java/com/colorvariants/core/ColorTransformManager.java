@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages color transformations for blocks in a world.
@@ -22,7 +24,18 @@ public class ColorTransformManager extends SavedData {
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorTransformManager.class);
     private static final String DATA_NAME = "colorvariants_transforms";
     
-    private final Map<BlockPos, ColorTransform> transforms = new HashMap<>();
+    // Client-side instance
+    private static final ColorTransformManager CLIENT_INSTANCE = new ColorTransformManager();
+
+    /**
+     * Clears the client-side instance. Should be called on world unload.
+     */
+    public static void clearClient() {
+        CLIENT_INSTANCE.clearAll();
+    }
+
+    // Use ConcurrentHashMap for thread safety
+    private final Map<BlockPos, ColorTransform> transforms = new ConcurrentHashMap<>();
     
     public ColorTransformManager() {
     }
@@ -30,16 +43,17 @@ public class ColorTransformManager extends SavedData {
     /**
      * Gets the ColorTransformManager for a world.
      */
-    public static ColorTransformManager get(Level world) {
-        if (!(world instanceof ServerLevel serverLevel)) {
-            throw new IllegalArgumentException("Can only get manager on server side");
+    public static ColorTransformManager get(BlockAndTintGetter world) {
+        if (world instanceof ServerLevel serverLevel) {
+            return serverLevel.getDataStorage().computeIfAbsent(
+                ColorTransformManager::load,
+                ColorTransformManager::new,
+                DATA_NAME
+            );
+        } else {
+            // Client side or test
+            return CLIENT_INSTANCE;
         }
-        
-        return serverLevel.getDataStorage().computeIfAbsent(
-            ColorTransformManager::load,
-            ColorTransformManager::new,
-            DATA_NAME
-        );
     }
     
     /**
