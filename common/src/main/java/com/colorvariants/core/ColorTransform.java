@@ -1,6 +1,7 @@
 package com.colorvariants.core;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 
 /**
  * Represents a color transformation using HSV (Hue, Saturation, Value) values.
@@ -68,6 +69,33 @@ public class ColorTransform {
         
         // Pack into integer
         return (a << 24) | (newRgb[0] << 16) | (newRgb[1] << 8) | newRgb[2];
+    }
+
+    /**
+     * Converts this transformation to a packed ARGB integer representing the color tint.
+     * This is useful for vertex coloring where we multiply the existing color.
+     * Since we are doing a shift/multiply model, this approximation might need tuning.
+     * However, the vertex consumer typically multiplies existing color by this color.
+     *
+     * If we want to support hue shifting properly via vertex colors, it's tricky because
+     * vertex colors are multiplicative.
+     *
+     * But the AGENTS.md says:
+     * "int baseColor = transform.toARGB();"
+     * "vertices[v * 8 + 3] = multiplyColors(vertices[v * 8 + 3], baseColor);"
+     *
+     * This implies toARGB() should return a color that when multiplied gives the effect.
+     * Multiplicative color can do brightness and saturation (to some extent, mostly darkening),
+     * but strictly speaking, hue shifting isn't fully possible with just multiplicative vertex colors
+     * on a pre-colored texture unless we assume the texture is greyscale or we accept tinting.
+     *
+     * However, let's implement `toARGB()` as requested by the memory/AGENTS.md.
+     * We'll assume it returns an opaque color derived from the transform.
+     * Since we can't easily hue-shift via multiplication on arbitrary colors,
+     * we will generate a color based on the transform applied to WHITE.
+     */
+    public int toARGB() {
+        return apply(0xFFFFFFFF);
     }
     
     /**
