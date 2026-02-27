@@ -53,6 +53,8 @@ public class ColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
 
+            // MAX_DISTANCE
+
             ServerLevel level = player.serverLevel();
 
             // 1. Save data to Manager
