@@ -8,12 +8,15 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import java.util.function.Supplier;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Packet sent from client to server to update a block's color.
  */
 public class ColorUpdatePacket {
+
+    private static final int MAX_DISTANCE = 64; // Maximum interaction distance
+    private static final double MAX_DISTANCE_SQR = MAX_DISTANCE * MAX_DISTANCE;
 
     private final BlockPos pos;
     private final ColorTransform transform;
@@ -53,7 +56,24 @@ public class ColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
 
+            // Security: Distance check
+            if (player.distanceToSqr(Vec3.atCenterOf(packet.pos)) > MAX_DISTANCE_SQR) {
+                return; // Ignore packet if too far
+            }
+
+            // Security: Permission check (basic OP check or permission API if available)
+            // For now, we assume basic interaction permissions are handled by block interaction,
+            // but for packets we should at least check if the player can modify the world.
+            if (!player.mayBuild()) {
+                return;
+            }
+
             ServerLevel level = player.serverLevel();
+
+            // Security: Chunk loaded check
+            if (!level.hasChunkAt(packet.pos)) {
+                return;
+            }
 
             // 1. Save data to Manager
             ColorTransformManager manager = ColorTransformManager.get(level);

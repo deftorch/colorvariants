@@ -1,6 +1,7 @@
 plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev.legacyforge'
+    id 'jacoco'
 }
 
 legacyForge {
@@ -35,4 +36,17 @@ configurations {
 artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn ":fabric:test"
+    executionData.setFrom(fileTree(dir: "${rootDir}/fabric/build/jacoco", include: "test.exec"))
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }

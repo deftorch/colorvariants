@@ -2,20 +2,23 @@ package com.colorvariants.network;
 
 import com.colorvariants.core.ColorTransform;
 import com.colorvariants.core.ColorTransformManager;
-import com.colorvariants.core.UndoRedoManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Packet for updating colors of multiple blocks in an area.
  */
 public class AreaColorUpdatePacket {
+
+    private static final int MAX_DISTANCE = 64;
+    private static final double MAX_DISTANCE_SQR = MAX_DISTANCE * MAX_DISTANCE;
+    private static final int MAX_AREA_SIZE = 32768; // approx 32x32x32
 
     private final List<BlockPos> positions;
     private final ColorTransform transform;
@@ -49,6 +52,11 @@ public class AreaColorUpdatePacket {
      */
     public static AreaColorUpdatePacket decode(FriendlyByteBuf buf) {
         int size = buf.readInt();
+        // Security: Limit collection size allocation
+        if (size > MAX_AREA_SIZE) {
+             size = MAX_AREA_SIZE; // Cap it to avoid OOM attack
+        }
+
         List<BlockPos> positions = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
@@ -68,42 +76,69 @@ public class AreaColorUpdatePacket {
     /**
      * Handles the packet on the server side.
      */
-    /**
-     * Handles the packet on the server side.
-     */
     public static void handle(AreaColorUpdatePacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
             if (player == null)
                 return;
 
+            // Security: Max blocks check
+            if (packet.positions.size() > MAX_AREA_SIZE) {
+                return;
+            }
+
+            // Security: Permission
+            if (!player.mayBuild()) {
+                return;
+            }
+
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);
 
+            // Security: Validate first position distance (optimization)
+            if (!packet.positions.isEmpty()) {
+                if (player.distanceToSqr(Vec3.atCenterOf(packet.positions.get(0))) > MAX_DISTANCE_SQR) {
+                     return;
+                }
+            }
+
             if (packet.sameTypeOnly && !packet.positions.isEmpty()) {
                 // Get the block type from the first position
-                var firstBlockState = world.getBlockState(packet.positions.get(0));
+                // Check if loaded
+                BlockPos firstPos = packet.positions.get(0);
+                if (!world.isLoaded(firstPos)) return;
 
-                // Filter positions to only include same block type
-                List<BlockPos> filteredPositions = packet.positions.stream()
-                        .filter(pos -> world.getBlockState(pos).getBlock() == firstBlockState.getBlock())
-                        .toList();
+                var firstBlockState = world.getBlockState(firstPos);
+
+                // Filter positions to only include same block type and validate distance/loaded
+                List<BlockPos> filteredPositions = new ArrayList<>();
+                for (BlockPos pos : packet.positions) {
+                    if (world.isLoaded(pos) &&
+                        player.distanceToSqr(Vec3.atCenterOf(pos)) <= MAX_DISTANCE_SQR &&
+                        world.getBlockState(pos).getBlock() == firstBlockState.getBlock()) {
+                        filteredPositions.add(pos);
+                    }
+                }
 
                 // Apply color to filtered positions
                 for (BlockPos pos : filteredPositions) {
                     manager.setTransform(pos, packet.transform);
                 }
             } else {
-                // Apply to all positions
+                // Apply to all valid positions
                 for (BlockPos pos : packet.positions) {
-                    manager.setTransform(pos, packet.transform);
+                    if (world.isLoaded(pos) && player.distanceToSqr(Vec3.atCenterOf(pos)) <= MAX_DISTANCE_SQR) {
+                        manager.setTransform(pos, packet.transform);
+                    }
                 }
             }
 
-            // Sync to all clients
+            // Sync to all clients (this might be spammy, ideally verify if needed)
             for (BlockPos pos : packet.positions) {
-                ColorSyncPacket syncPacket = new ColorSyncPacket(pos, packet.transform);
-                PacketHandler.sendToAll(syncPacket);
+                 if (world.isLoaded(pos) && player.distanceToSqr(Vec3.atCenterOf(pos)) <= MAX_DISTANCE_SQR) {
+                    ColorSyncPacket syncPacket = new ColorSyncPacket(pos, packet.transform);
+                    PacketHandler.sendToAll(syncPacket);
+                 }
             }
         });
 

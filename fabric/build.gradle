@@ -1,6 +1,7 @@
 plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
+    id 'jacoco'
 }
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
@@ -15,6 +16,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.mockito:mockito-core:5.3.1'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
     testImplementation 'org.mockito:mockito-inline:5.2.0'
 }
 
@@ -38,5 +40,17 @@ loom {
             ideConfigGenerated(true)
             runDir("run")
         }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
     }
 }

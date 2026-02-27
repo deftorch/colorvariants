@@ -7,12 +7,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import java.util.function.Supplier;
 
 /**
  * Packet sent from server to clients to synchronize block colors.
  */
 public class ColorSyncPacket {
+
+    // MAX_DISTANCE validation is handled on server before sending.
+    // Client trusts server for sync packets.
 
     private final BlockPos pos;
     private final ColorTransform transform;
@@ -47,19 +49,21 @@ public class ColorSyncPacket {
     /**
      * Handles the packet on the client side.
      */
-    /**
-     * Handles the packet on the client side.
-     */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {
             Level level = Minecraft.getInstance().level;
             if (level == null)
                 return;
 
+            // Security: Although trusted, we verify pos is within reason if needed,
+            // but primarily we check if the chunk is loaded/block entity accessible.
+            if (!level.isLoaded(packet.pos)) return;
+
             BlockEntity blockEntity = level.getBlockEntity(packet.pos);
 
             if (!(blockEntity instanceof ColoredBlockEntity)) {
                 // Create new block entity on client
+                // Note: Client usually shouldn't create BEs if server says so, but for visual overrides it's okay.
                 ColoredBlockEntity coloredBE = new ColoredBlockEntity(
                         packet.pos,
                         level.getBlockState(packet.pos));
