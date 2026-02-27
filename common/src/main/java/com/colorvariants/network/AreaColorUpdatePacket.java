@@ -77,6 +77,8 @@ public class AreaColorUpdatePacket {
             if (player == null)
                 return;
 
+            // MAX_DISTANCE
+
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);
 

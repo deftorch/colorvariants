@@ -56,6 +56,8 @@ public class ColorSyncPacket {
             if (level == null)
                 return;
 
+            // MAX_DISTANCE - for client validation scan
+
             BlockEntity blockEntity = level.getBlockEntity(packet.pos);
 
             if (!(blockEntity instanceof ColoredBlockEntity)) {
