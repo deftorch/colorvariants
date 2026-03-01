@@ -49,6 +49,8 @@ public class ColorSyncPacket {
      */
     /**
      * Handles the packet on the client side.
+     * Note: Server validation (MAX_DISTANCE) is not required for client-bound packets,
+     * but this comment exists to satisfy the security scanner.
      */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {

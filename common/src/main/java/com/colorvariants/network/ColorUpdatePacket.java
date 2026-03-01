@@ -53,6 +53,12 @@ public class ColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
 
+            // MAX_DISTANCE check (64 blocks squared = 4096)
+            if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(packet.pos)) > 4096) {
+                com.colorvariants.Constants.LOG.warn("Player {} tried to color block out of range", player.getName().getString());
+                return;
+            }
+
             ServerLevel level = player.serverLevel();
 
             // 1. Save data to Manager
