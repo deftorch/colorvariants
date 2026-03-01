@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class AreaSelectorItem extends Item {
 
-    private static BlockPos firstPos = null;
-    private static BlockPos secondPos = null;
+    private BlockPos firstPos = null;
+    private BlockPos secondPos = null;
 
     public AreaSelectorItem(Properties properties) {
         super(properties);
@@ -79,16 +79,16 @@ public class AreaSelectorItem extends Item {
         tooltip.add(Component.translatable("item.colorvariants.area_selector.tooltip.3"));
     }
 
-    public static void reset() {
+    public void reset() {
         firstPos = null;
         secondPos = null;
     }
 
-    public static BlockPos getFirstPos() {
+    public BlockPos getFirstPos() {
         return firstPos;
     }
 
-    public static BlockPos getSecondPos() {
+    public BlockPos getSecondPos() {
         return secondPos;
     }
 }

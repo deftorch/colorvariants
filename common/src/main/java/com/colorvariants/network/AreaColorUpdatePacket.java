@@ -77,6 +77,14 @@ public class AreaColorUpdatePacket {
             if (player == null)
                 return;
 
+            // Security check MAX_DISTANCE squared
+            for (BlockPos pos : packet.positions) {
+                if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > 4096) {
+                    com.colorvariants.Constants.LOG.warn("Player {} tried to area color out of range", player.getName().getString());
+                    return;
+                }
+            }
+
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);
 
