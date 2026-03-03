@@ -8,13 +8,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import java.util.function.Supplier;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Packet sent from client to server to update a block's color.
  */
 public class ColorUpdatePacket {
 
+    private static final int MAX_DISTANCE_SQ = 64; // 8 blocks squared
     private final BlockPos pos;
     private final ColorTransform transform;
 
@@ -52,6 +53,11 @@ public class ColorUpdatePacket {
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
+
+            // 1. Distance check
+            if (player.distanceToSqr(Vec3.atCenterOf(packet.pos)) > MAX_DISTANCE_SQ) {
+                return;
+            }
 
             ServerLevel level = player.serverLevel();
 
