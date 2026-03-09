@@ -65,6 +65,8 @@ public class AreaColorUpdatePacket {
         return new AreaColorUpdatePacket(positions, transform, sameTypeOnly);
     }
 
+    private static final int MAX_DISTANCE_SQ = 64;
+
     /**
      * Handles the packet on the server side.
      */
@@ -76,6 +78,14 @@ public class AreaColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null)
                 return;
+
+            if (!packet.positions.isEmpty()) {
+                BlockPos firstPos = packet.positions.get(0);
+                // distanceTo, isOp, hasPermission, MAX_DISTANCE validation
+                if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(firstPos)) > MAX_DISTANCE_SQ) {
+                    return;
+                }
+            }
 
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);

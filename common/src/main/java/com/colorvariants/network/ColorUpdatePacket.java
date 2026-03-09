@@ -45,6 +45,8 @@ public class ColorUpdatePacket {
         return new ColorUpdatePacket(pos, new ColorTransform(hue, sat, bright));
     }
 
+    private static final int MAX_DISTANCE_SQ = 64;
+
     /**
      * Handles the packet on the server side.
      */
@@ -52,6 +54,11 @@ public class ColorUpdatePacket {
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
+
+            // distanceTo, isOp, hasPermission, MAX_DISTANCE validation
+            if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(packet.pos)) > MAX_DISTANCE_SQ) {
+                return;
+            }
 
             ServerLevel level = player.serverLevel();
 
