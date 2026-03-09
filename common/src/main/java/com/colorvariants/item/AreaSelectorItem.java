@@ -35,16 +35,20 @@ public class AreaSelectorItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (world.isClientSide) {
-            HitResult hitResult = Minecraft.getInstance().hitResult;
+        // Perform raycast on both client and server to get hit result
+        HitResult hitResult = player.pick(20.0D, 0.0F, false);
 
-            if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
-                BlockHitResult blockHit = (BlockHitResult) hitResult;
-                BlockPos pos = blockHit.getBlockPos();
+        if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
+            BlockHitResult blockHit = (BlockHitResult) hitResult;
+            BlockPos pos = blockHit.getBlockPos();
 
-                if (player.isShiftKeyDown()) {
-                    // Second position
+            if (player.isShiftKeyDown()) {
+                // Second position
+                if (!world.isClientSide) {
                     setSecondPos(stack, pos);
+                }
+
+                if (world.isClientSide) {
                     player.displayClientMessage(
                             Component.translatable("item.colorvariants.area_selector.second_pos",
                                     pos.getX(), pos.getY(), pos.getZ()),
@@ -54,10 +58,15 @@ public class AreaSelectorItem extends Item {
                     if (getFirstPos(stack).isPresent()) {
                         openAreaGUI(world, player, stack);
                     }
-                } else {
-                    // First position
+                }
+            } else {
+                // First position
+                if (!world.isClientSide) {
                     setFirstPos(stack, pos);
                     clearSecondPos(stack);
+                }
+
+                if (world.isClientSide) {
                     player.displayClientMessage(
                             Component.translatable("item.colorvariants.area_selector.first_pos",
                                     pos.getX(), pos.getY(), pos.getZ()),
