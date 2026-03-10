@@ -1,6 +1,12 @@
 plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev.legacyforge'
+    id 'jacoco'
+}
+
+jacocoTestReport {
+    dependsOn ':fabric:test'
+    executionData.setFrom(fileTree(dir: "${rootDir}/fabric/build/jacoco", include: "test.exec"))
 }
 
 legacyForge {

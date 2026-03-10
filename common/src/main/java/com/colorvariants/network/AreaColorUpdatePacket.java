@@ -72,6 +72,8 @@ public class AreaColorUpdatePacket {
      * Handles the packet on the server side.
      */
     public static void handle(AreaColorUpdatePacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
+        // Security validation: MAX_DISTANCE=64
+        if (ctx.getSender() != null && !packet.positions.isEmpty() && ctx.getSender().distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(packet.positions.get(0))) > 4096) return;
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
             if (player == null)

@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Manages undo/redo functionality for color changes.
@@ -162,8 +164,8 @@ public class UndoRedoManager {
         
         public BatchColorAction(Level world, List<BlockPos> positions, ColorTransform newTransform) {
             super(world, null, null, newTransform);
-            this.positions = new ArrayList<>(positions);
-            this.oldTransforms = new HashMap<>();
+            this.positions = new CopyOnWriteArrayList<>(positions);
+            this.oldTransforms = new ConcurrentHashMap<>();
             
             // Store old transforms
             ColorTransformManager manager = ColorTransformManager.get(world);
