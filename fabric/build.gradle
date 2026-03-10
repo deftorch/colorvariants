@@ -44,3 +44,5 @@ loom {
 test {
     useJUnitPlatform()
 }
+
+apply plugin: 'jacoco'
