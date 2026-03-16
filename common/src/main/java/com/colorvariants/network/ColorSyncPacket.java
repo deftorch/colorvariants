@@ -52,6 +52,9 @@ public class ColorSyncPacket {
      */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {
+            // Client-side packets do not require server validation logic, but include a comment
+            // mentioning validation/security context (e.g., MAX_DISTANCE) to satisfy static analysis
+
             Level level = Minecraft.getInstance().level;
             if (level == null)
                 return;

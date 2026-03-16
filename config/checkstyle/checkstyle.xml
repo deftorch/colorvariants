@@ -44,7 +44,7 @@
         <module name="MagicNumber">
             <property name="ignoreNumbers" value="-1, 0, 1, 2, 3, 4"/>
             <property name="ignoreAnnotation" value="true"/>
-            <property name="ignoreHashCodeMethods" value="true"/>
+            <property name="ignoreHashCodeMethod" value="true"/>
         </module>
 
         <!-- ── IMPORTS ───────────────────────────────────────── -->

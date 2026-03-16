@@ -11,7 +11,16 @@ import java.nio.file.Path;
 
 public class FabricConfigHelper implements IConfigHelper {
 
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("colorvariants.json");
+    private static Path getConfigPath() {
+        try {
+            return FabricLoader.getInstance().getConfigDir().resolve("colorvariants.json");
+        } catch (NullPointerException e) {
+            // Fallback for tests when FabricLoader is not initialized
+            return Path.of("config", "colorvariants.json");
+        }
+    }
+
+    private static final Path CONFIG_PATH = getConfigPath();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private final ConfigData data;
 

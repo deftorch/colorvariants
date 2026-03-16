@@ -78,6 +78,22 @@ public class AreaColorUpdatePacket {
                 return;
 
             Level world = player.level();
+
+            // Server-side validation
+            final int MAX_AREA_VOLUME = 262144; // 64^3
+            if (packet.positions.size() > MAX_AREA_VOLUME) {
+                com.colorvariants.Constants.LOG.warn("Player {} tried to color too many blocks", player.getName());
+                return;
+            }
+
+            final int MAX_DISTANCE_SQ = 4096; // 64 blocks squared
+            for (BlockPos p : packet.positions) {
+                if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(p)) > MAX_DISTANCE_SQ) {
+                    com.colorvariants.Constants.LOG.warn("Player {} tried to color block out of range", player.getName());
+                    return;
+                }
+            }
+
             ColorTransformManager manager = ColorTransformManager.get(world);
 
             if (packet.sameTypeOnly && !packet.positions.isEmpty()) {
