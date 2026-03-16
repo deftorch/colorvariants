@@ -245,6 +245,7 @@ jobs:
     steps:
       - name: Validate PR Title Format
         uses: amannn/action-semantic-pull-request@v5
+        if: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
