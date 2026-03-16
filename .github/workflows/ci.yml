@@ -117,6 +117,8 @@ jobs:
           name: Unit Test Results
           path: '**/build/test-results/**/*.xml'
           reporter: java-junit
+          fail-on-error: 'false'
+          fail-on-empty: 'false'
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4

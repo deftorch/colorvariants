@@ -1,6 +1,45 @@
 plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev.legacyforge'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '6.0.26'
+    id 'jacoco'
+}
+
+checkstyle {
+    toolVersion = "10.12.4"
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+    ignoreFailures = true
+    maxWarnings = 1000
+}
+
+spotbugs {
+    toolVersion = "4.8.6"
+    ignoreFailures = true
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+jacocoTestReport {
+    dependsOn ':fabric:test'
+
+    // Jacoco needs class files to generate report
+    classDirectories.setFrom(
+        fileTree(dir: "${buildDir}/classes/java/main")
+    )
+
+    // Jacoco needs source files for HTML report to show code
+    sourceDirectories.setFrom(
+        fileTree(dir: "${projectDir}/src/main/java")
+    )
+
+    executionData.setFrom(fileTree(dir: "${rootDir}/fabric/build/jacoco", include: "test.exec"))
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 
 legacyForge {

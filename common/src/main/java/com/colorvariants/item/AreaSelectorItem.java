@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class AreaSelectorItem extends Item {
 
-    private static BlockPos firstPos = null;
-    private static BlockPos secondPos = null;
+    private static final String NBT_FIRST_POS = "FirstPos";
+    private static final String NBT_SECOND_POS = "SecondPos";
 
     public AreaSelectorItem(Properties properties) {
         super(properties);
@@ -38,22 +38,27 @@ public class AreaSelectorItem extends Item {
                 BlockHitResult blockHit = (BlockHitResult) hitResult;
                 BlockPos pos = blockHit.getBlockPos();
 
+                ItemStack stack = player.getItemInHand(hand);
+
                 if (player.isShiftKeyDown()) {
                     // Second position
-                    secondPos = pos;
+                    setSecondPos(stack, pos);
                     player.displayClientMessage(
                             Component.translatable("item.colorvariants.area_selector.second_pos",
                                     pos.getX(), pos.getY(), pos.getZ()),
                             true);
 
                     // If both positions set, open GUI
-                    if (firstPos != null) {
-                        openAreaGUI(world, player);
-                    }
+                    getFirstPos(stack).ifPresent(first -> {
+                        openAreaGUI(first, pos);
+                    });
                 } else {
                     // First position
-                    firstPos = pos;
-                    secondPos = null;
+                    setFirstPos(stack, pos);
+                    // Clear second position
+                    net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+                    tag.remove(NBT_SECOND_POS);
+
                     player.displayClientMessage(
                             Component.translatable("item.colorvariants.area_selector.first_pos",
                                     pos.getX(), pos.getY(), pos.getZ()),
@@ -65,11 +70,35 @@ public class AreaSelectorItem extends Item {
         return InteractionResultHolder.success(player.getItemInHand(hand));
     }
 
-    private void openAreaGUI(Level world, Player player) {
-        if (firstPos != null && secondPos != null) {
-            Minecraft.getInstance().setScreen(
-                    new AreaColorPickerScreen(firstPos, secondPos));
-        }
+    private void openAreaGUI(BlockPos first, BlockPos second) {
+        Minecraft.getInstance().setScreen(
+                new AreaColorPickerScreen(first, second));
+    }
+
+    public java.util.Optional<BlockPos> getFirstPos(ItemStack stack) {
+        net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+        if (!tag.contains(NBT_FIRST_POS)) return java.util.Optional.empty();
+        int[] coords = tag.getIntArray(NBT_FIRST_POS);
+        if (coords.length < 3) return java.util.Optional.empty();
+        return java.util.Optional.of(new BlockPos(coords[0], coords[1], coords[2]));
+    }
+
+    public void setFirstPos(ItemStack stack, BlockPos pos) {
+        net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+        tag.putIntArray(NBT_FIRST_POS, new int[]{pos.getX(), pos.getY(), pos.getZ()});
+    }
+
+    public java.util.Optional<BlockPos> getSecondPos(ItemStack stack) {
+        net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+        if (!tag.contains(NBT_SECOND_POS)) return java.util.Optional.empty();
+        int[] coords = tag.getIntArray(NBT_SECOND_POS);
+        if (coords.length < 3) return java.util.Optional.empty();
+        return java.util.Optional.of(new BlockPos(coords[0], coords[1], coords[2]));
+    }
+
+    public void setSecondPos(ItemStack stack, BlockPos pos) {
+        net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+        tag.putIntArray(NBT_SECOND_POS, new int[]{pos.getX(), pos.getY(), pos.getZ()});
     }
 
     @Override
@@ -79,16 +108,4 @@ public class AreaSelectorItem extends Item {
         tooltip.add(Component.translatable("item.colorvariants.area_selector.tooltip.3"));
     }
 
-    public static void reset() {
-        firstPos = null;
-        secondPos = null;
-    }
-
-    public static BlockPos getFirstPos() {
-        return firstPos;
-    }
-
-    public static BlockPos getSecondPos() {
-        return secondPos;
-    }
 }

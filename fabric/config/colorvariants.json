@@ -1,0 +1,5 @@
+{
+  "cacheEnabled": true,
+  "maxCacheSize": 1000,
+  "asyncGeneration": true
+}
