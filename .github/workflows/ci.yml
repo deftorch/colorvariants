@@ -247,25 +247,6 @@ jobs:
         uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          types: |
-            fix
-            feat
-            refactor
-            test
-            docs
-            chore
-            perf
-          scopes: |
-            rendering
-            security
-            network
-            items
-            config
-            compat
-            core
-            build
-            ci
 
       - name: Check for Test Coverage
         uses: actions/checkout@v4
