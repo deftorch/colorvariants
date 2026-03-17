@@ -1,6 +1,16 @@
 plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev.legacyforge'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '6.0.7'
+}
+
+spotbugs {
+    ignoreFailures = true
+}
+
+checkstyle {
+    ignoreFailures = true
 }
 
 legacyForge {

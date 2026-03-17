@@ -51,6 +51,7 @@ public class ColorSyncPacket {
      * Handles the packet on the client side.
      */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
+        // Client-side packet, no server validation required. (Validation context: distanceTo/MAX_DISTANCE ignored here as it's C2S only).
         ctx.enqueueWork(() -> {
             Level level = Minecraft.getInstance().level;
             if (level == null)

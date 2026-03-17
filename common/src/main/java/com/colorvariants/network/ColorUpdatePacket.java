@@ -45,6 +45,8 @@ public class ColorUpdatePacket {
         return new ColorUpdatePacket(pos, new ColorTransform(hue, sat, bright));
     }
 
+    private static final int MAX_DISTANCE_SQ = 64; // 8 blocks squared
+
     /**
      * Handles the packet on the server side.
      */
@@ -52,6 +54,12 @@ public class ColorUpdatePacket {
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
+
+            // 1. Distance check for validation
+            if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(packet.pos)) > MAX_DISTANCE_SQ) {
+                com.colorvariants.Constants.LOG.warn("Player {} tried to color block out of range", player.getName().getString());
+                return;
+            }
 
             ServerLevel level = player.serverLevel();
 
