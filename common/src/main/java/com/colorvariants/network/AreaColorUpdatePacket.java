@@ -65,6 +65,9 @@ public class AreaColorUpdatePacket {
         return new AreaColorUpdatePacket(positions, transform, sameTypeOnly);
     }
 
+    private static final int MAX_DISTANCE_SQ = 64; // 8 blocks squared
+    private static final int MAX_AREA_VOLUME = 32768; // 32^3
+
     /**
      * Handles the packet on the server side.
      */
@@ -76,6 +79,18 @@ public class AreaColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null)
                 return;
+
+            if (packet.positions.size() > MAX_AREA_VOLUME) {
+                com.colorvariants.Constants.LOG.warn("Player {} tried to color too many blocks", player.getName().getString());
+                return;
+            }
+
+            for (BlockPos pos : packet.positions) {
+                if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > MAX_DISTANCE_SQ) {
+                    com.colorvariants.Constants.LOG.warn("Player {} tried to color block out of range", player.getName().getString());
+                    return;
+                }
+            }
 
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);
