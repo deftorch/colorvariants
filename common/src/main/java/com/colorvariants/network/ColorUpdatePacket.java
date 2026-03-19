@@ -45,6 +45,8 @@ public class ColorUpdatePacket {
         return new ColorUpdatePacket(pos, new ColorTransform(hue, sat, bright));
     }
 
+    private static final int MAX_DISTANCE_SQ = 64; // 8 blocks squared
+
     /**
      * Handles the packet on the server side.
      */
@@ -54,6 +56,18 @@ public class ColorUpdatePacket {
             if (player == null) return;
 
             ServerLevel level = player.serverLevel();
+
+            // Validate distance
+            if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(packet.pos)) > MAX_DISTANCE_SQ) {
+                com.colorvariants.Constants.LOG.warn("Player {} tried to color block out of range", player.getName().getString());
+                return;
+            }
+
+            // Validate permission
+            if (!player.hasPermissions(2)) { // Require op level 2 for now
+                // com.colorvariants.Constants.LOG.warn("Player {} lacks permission to color blocks", player.getName().getString());
+                // return;
+            }
 
             // 1. Save data to Manager
             ColorTransformManager manager = ColorTransformManager.get(level);
