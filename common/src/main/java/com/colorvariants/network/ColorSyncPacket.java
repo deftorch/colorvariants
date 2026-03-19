@@ -44,9 +44,8 @@ public class ColorSyncPacket {
         return new ColorSyncPacket(pos, new ColorTransform(hue, sat, bright));
     }
 
-    /**
-     * Handles the packet on the client side.
-     */
+    private static final int MAX_DISTANCE_SQ = 4096; // Client validation comment
+
     /**
      * Handles the packet on the client side.
      */

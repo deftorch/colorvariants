@@ -15,8 +15,8 @@ public class UndoRedoManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(UndoRedoManager.class);
     private static final int MAX_HISTORY_SIZE = 50;
     
-    private final Deque<ColorAction> undoStack = new ArrayDeque<>();
-    private final Deque<ColorAction> redoStack = new ArrayDeque<>();
+    private final Deque<ColorAction> undoStack = new java.util.concurrent.ConcurrentLinkedDeque<>();
+    private final Deque<ColorAction> redoStack = new java.util.concurrent.ConcurrentLinkedDeque<>();
     
     /**
      * Records a color change action.
@@ -162,8 +162,8 @@ public class UndoRedoManager {
         
         public BatchColorAction(Level world, List<BlockPos> positions, ColorTransform newTransform) {
             super(world, null, null, newTransform);
-            this.positions = new ArrayList<>(positions);
-            this.oldTransforms = new HashMap<>();
+            this.positions = new java.util.concurrent.CopyOnWriteArrayList<>(positions);
+            this.oldTransforms = new java.util.concurrent.ConcurrentHashMap<>();
             
             // Store old transforms
             ColorTransformManager manager = ColorTransformManager.get(world);

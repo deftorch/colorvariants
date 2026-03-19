@@ -30,13 +30,11 @@ public class MixinBlockModelRenderer {
         boolean checkSides, RandomSource random, long seed, int overlay,
         CallbackInfo ci
     ) {
-        // TODO: Client-side data connection
-        // For now, get color data from local BlockEntity if it exists, since ColorTransformManager requires ServerLevel
         ColorTransform transform = ColorTransform.NONE;
-        if (level.getBlockEntity(pos) != null) {
-            // we will need to access the color from the block entity,
-            // but for now we just use NONE to bypass if not found
+        if (level.getBlockEntity(pos) instanceof com.colorvariants.block.ColoredBlockEntity cbe) {
+            transform = cbe.getTransform();
         }
+
         if (transform.isNone()) return;
 
         ci.cancel();
