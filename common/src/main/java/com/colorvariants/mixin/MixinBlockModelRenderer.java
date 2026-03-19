@@ -1,6 +1,7 @@
 package com.colorvariants.mixin;
 
 import com.colorvariants.core.ColorTransform;
+import com.colorvariants.core.ColorTransformManager;
 import com.colorvariants.block.ColoredBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -22,7 +23,7 @@ public class MixinBlockModelRenderer {
             method = "tesselateBlock",
             at = @At("HEAD"),
             argsOnly = true,
-            index = 6 // VertexConsumer is the 6th parameter (0-indexed is 5, but index in LVt is often tricky. Using argsOnly=true is better)
+            index = 6
     )
     public VertexConsumer colorvariants$wrapVertexConsumer(VertexConsumer consumer, BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack) {
         if (!(level.getBlockEntity(pos) instanceof ColoredBlockEntity coloredBlock)) {
