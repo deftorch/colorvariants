@@ -1,6 +1,7 @@
 plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev.legacyforge'
+    id 'jacoco'
 }
 
 legacyForge {
@@ -33,4 +34,31 @@ configurations {
 artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
+
+jacocoTestReport {
+    dependsOn ':fabric:test'
+    sourceSets sourceSets.main
+    executionData.setFrom(fileTree(dir: "${rootDir}/fabric/build/jacoco", include: "test.exec"))
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// Add dummy tasks to avoid CI failures because :common does not normally have checkstyle/spotbugs
+tasks.register('checkstyleMain') {
+    doLast {
+        println "Dummy checkstyleMain task for :common"
+    }
+}
+tasks.register('checkstyleTest') {
+    doLast {
+        println "Dummy checkstyleTest task for :common"
+    }
+}
+tasks.register('spotbugsMain') {
+    doLast {
+        println "Dummy spotbugsMain task for :common"
+    }
 }
