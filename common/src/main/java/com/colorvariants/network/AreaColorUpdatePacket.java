@@ -77,6 +77,18 @@ public class AreaColorUpdatePacket {
             if (player == null)
                 return;
 
+            // Security Validation: Validate MAX_DISTANCE
+            double MAX_DISTANCE = 64.0 * 64.0;
+            if (packet.positions.size() > 32768) {
+                return; // Hard limit for volume
+            }
+
+            for (BlockPos pos : packet.positions) {
+                if (player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > MAX_DISTANCE) {
+                    return; // Fail if any block is too far
+                }
+            }
+
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);
 
