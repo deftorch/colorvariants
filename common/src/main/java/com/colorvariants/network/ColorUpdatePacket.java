@@ -53,6 +53,12 @@ public class ColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
 
+            // Security Validation
+            double MAX_DISTANCE = 64.0 * 64.0;
+            if (player.distanceToSqr(packet.pos.getX() + 0.5, packet.pos.getY() + 0.5, packet.pos.getZ() + 0.5) > MAX_DISTANCE) {
+                return;
+            }
+
             ServerLevel level = player.serverLevel();
 
             // 1. Save data to Manager
