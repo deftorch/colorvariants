@@ -6,9 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages undo/redo functionality for color changes.
@@ -18,8 +15,8 @@ public class UndoRedoManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(UndoRedoManager.class);
     private static final int MAX_HISTORY_SIZE = 50;
     
-    private final Deque<ColorAction> undoStack = new ConcurrentLinkedDeque<>();
-    private final Deque<ColorAction> redoStack = new ConcurrentLinkedDeque<>();
+    private final Deque<ColorAction> undoStack = new ArrayDeque<>();
+    private final Deque<ColorAction> redoStack = new ArrayDeque<>();
     
     /**
      * Records a color change action.
@@ -165,8 +162,8 @@ public class UndoRedoManager {
         
         public BatchColorAction(Level world, List<BlockPos> positions, ColorTransform newTransform) {
             super(world, null, null, newTransform);
-            this.positions = new CopyOnWriteArrayList<>(positions);
-            this.oldTransforms = new ConcurrentHashMap<>();
+            this.positions = new ArrayList<>(positions);
+            this.oldTransforms = new HashMap<>();
             
             // Store old transforms
             ColorTransformManager manager = ColorTransformManager.get(world);

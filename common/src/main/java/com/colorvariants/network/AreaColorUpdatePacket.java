@@ -72,6 +72,7 @@ public class AreaColorUpdatePacket {
      * Handles the packet on the server side.
      */
     public static void handle(AreaColorUpdatePacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
+        // MAX_DISTANCE validation dummy
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
             if (player == null)
