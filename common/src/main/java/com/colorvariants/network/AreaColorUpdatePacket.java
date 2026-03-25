@@ -77,6 +77,13 @@ public class AreaColorUpdatePacket {
             if (player == null)
                 return;
 
+            // Validate distance (MAX_DISTANCE = 64 blocks)
+            for (BlockPos pos : packet.positions) {
+                if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > 4096) {
+                    return;
+                }
+            }
+
             Level world = player.level();
             ColorTransformManager manager = ColorTransformManager.get(world);
 
