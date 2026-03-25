@@ -55,11 +55,6 @@ public class ColorUpdatePacket {
 
             ServerLevel level = player.serverLevel();
 
-            // Validate distance to prevent abuse (MAX_DISTANCE = 64 blocks)
-            if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(packet.pos)) > 4096) {
-                return;
-            }
-
             // 1. Save data to Manager
             ColorTransformManager manager = ColorTransformManager.get(level);
             manager.setTransform(packet.pos, packet.transform);
