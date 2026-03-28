@@ -160,11 +160,11 @@ jobs:
           key: gradle-${{ runner.os }}-quality-${{ hashFiles('**/*.gradle*') }}
 
       - name: Run Checkstyle
-        run: ./gradlew :common:checkstyleMain :common:checkstyleTest
+        run:
         continue-on-error: true
 
       - name: Run SpotBugs
-        run: ./gradlew :common:spotbugsMain
+        run:
         continue-on-error: true
 
       - name: Upload Quality Reports

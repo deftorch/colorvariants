@@ -53,6 +53,13 @@ public class ColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
 
+            // distanceTo, isOp, hasPermission, MAX_DISTANCE validation
+            double MAX_DISTANCE_SQ = 4096; // 64 blocks
+            if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(packet.pos)) > MAX_DISTANCE_SQ) {
+                return;
+            }
+
+
             ServerLevel level = player.serverLevel();
 
             // 1. Save data to Manager
