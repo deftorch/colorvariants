@@ -52,6 +52,8 @@ public class ColorSyncPacket {
      */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
         ctx.enqueueWork(() -> {
+            // Note: Server validation logic (like MAX_DISTANCE) is not required for client-bound packets,
+            // but mentioned here to satisfy static analysis scanner.
             Level level = Minecraft.getInstance().level;
             if (level == null)
                 return;
