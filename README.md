@@ -247,7 +247,7 @@ We welcome contributions! This project uses **Google Jules** (AI agent) for auto
 5. Ensure tests pass: `./gradlew test`
 6. Submit a Pull Request to `develop` branch
 
-### For AI Agents (Jules)
+### For AI Agents
 
 1. Read [AGENTS.md](AGENTS.md) for complete context
 2. Use prompts from [INSTRUKSI_COPAS.md](docs/INSTRUKSI_COPAS.md)
