@@ -1,5 +1,6 @@
 package com.colorvariants.network;
 
+import com.colorvariants.Constants;
 import com.colorvariants.block.ColoredBlockEntity;
 import com.colorvariants.core.ColorTransform;
 import com.colorvariants.core.ColorTransformManager;
@@ -8,15 +9,17 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import java.util.function.Supplier;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Packet sent from client to server to update a block's color.
  */
 public class ColorUpdatePacket {
 
-    private final BlockPos pos;
-    private final ColorTransform transform;
+    private static final int MAX_DISTANCE_SQ = 64; // 8 blocks squared
+
+    public final BlockPos pos;
+    public final ColorTransform transform;
 
     public ColorUpdatePacket(BlockPos pos, ColorTransform transform) {
         this.pos = pos;
@@ -53,31 +56,33 @@ public class ColorUpdatePacket {
             ServerPlayer player = ctx.getSender();
             if (player == null) return;
 
+            // 1. Distance check validation
+            if (player.distanceToSqr(Vec3.atCenterOf(packet.pos)) > MAX_DISTANCE_SQ) {
+                Constants.LOG.warn("Player {} tried to color block out of range", player.getName());
+                return;
+            }
+
             ServerLevel level = player.serverLevel();
 
-            // 1. Save data to Manager
+            // 2. Save data to Manager
             ColorTransformManager manager = ColorTransformManager.get(level);
             manager.setTransform(packet.pos, packet.transform);
 
-            // 2. FORCE UPDATE BLOCKSTATE (Important for client to know about changes)
-            // Send block update to rerender chunk
+            // 3. FORCE UPDATE BLOCKSTATE
             level.sendBlockUpdated(packet.pos, level.getBlockState(packet.pos), level.getBlockState(packet.pos), 3);
 
-            // 3. Handle Block Entity if needed (though MixinBlockBehavior should handle capability)
+            // 4. Handle Block Entity
             BlockEntity blockEntity = level.getBlockEntity(packet.pos);
-
             if (blockEntity instanceof ColoredBlockEntity coloredBE) {
                 coloredBE.setTransform(packet.transform);
                 coloredBE.setChanged();
             } else {
-                // Should be handled by MixinBlockBehavior allowing the BE to exist
-                // But we can try to set it if it's missing (might fail without mixin)
                 try {
                     ColoredBlockEntity newBE = new ColoredBlockEntity(packet.pos, level.getBlockState(packet.pos));
                     newBE.setTransform(packet.transform);
                     level.setBlockEntity(newBE);
                 } catch (Exception e) {
-                   // Ignore if we can't set it (e.g. vanilla block checks)
+                   // Ignore
                 }
             }
         });
