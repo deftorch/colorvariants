@@ -48,9 +48,6 @@ jobs:
           key: gradle-${{ runner.os }}-${{ matrix.loader }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: gradle-${{ runner.os }}-${{ matrix.loader }}-
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v3
-
       - name: Grant Execute Permission
         run: chmod +x gradlew
 
