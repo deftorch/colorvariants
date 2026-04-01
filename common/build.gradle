@@ -34,3 +34,14 @@ artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
 }
+
+apply plugin: 'jacoco'
+
+jacocoTestReport {
+    dependsOn ':fabric:test'
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    executionData.setFrom(fileTree(dir: "${rootDir}/fabric/build/jacoco", include: "test.exec"))
+}

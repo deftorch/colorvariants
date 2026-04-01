@@ -7,13 +7,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import java.util.function.Supplier;
 
 /**
  * Packet sent from server to clients to synchronize block colors.
  */
 public class ColorSyncPacket {
 
+    // Client side packet, doesn't need MAX_DISTANCE server validation
     private final BlockPos pos;
     private final ColorTransform transform;
 
@@ -44,9 +44,6 @@ public class ColorSyncPacket {
         return new ColorSyncPacket(pos, new ColorTransform(hue, sat, bright));
     }
 
-    /**
-     * Handles the packet on the client side.
-     */
     /**
      * Handles the packet on the client side.
      */

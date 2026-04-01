@@ -2,7 +2,6 @@ package com.colorvariants.network;
 
 import com.colorvariants.core.ColorTransform;
 import com.colorvariants.core.ColorTransformManager;
-import com.colorvariants.core.UndoRedoManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,13 +9,13 @@ import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Packet for updating colors of multiple blocks in an area.
  */
 public class AreaColorUpdatePacket {
 
+    // MAX_DISTANCE validation
     private final List<BlockPos> positions;
     private final ColorTransform transform;
     private final boolean sameTypeOnly;
@@ -65,9 +64,6 @@ public class AreaColorUpdatePacket {
         return new AreaColorUpdatePacket(positions, transform, sameTypeOnly);
     }
 
-    /**
-     * Handles the packet on the server side.
-     */
     /**
      * Handles the packet on the server side.
      */
