@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages color transformations for blocks in a world.
@@ -22,7 +23,7 @@ public class ColorTransformManager extends SavedData {
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorTransformManager.class);
     private static final String DATA_NAME = "colorvariants_transforms";
     
-    private final Map<BlockPos, ColorTransform> transforms = new HashMap<>();
+    private final Map<BlockPos, ColorTransform> transforms = new ConcurrentHashMap<>();
     
     public ColorTransformManager() {
     }
