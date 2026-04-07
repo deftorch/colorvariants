@@ -3,6 +3,7 @@ package com.colorvariants.util;
 import com.colorvariants.config.ModConfig;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -11,12 +12,14 @@ import java.util.Map;
  */
 public class TextureCache {
 
-    private final Map<String, ResourceLocation> cache = new LinkedHashMap<String, ResourceLocation>() {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, ResourceLocation> eldest) {
-            return size() > getMaxCacheSize();
-        }
-    };
+    private final Map<String, ResourceLocation> cache = Collections.synchronizedMap(
+            new LinkedHashMap<String, ResourceLocation>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, ResourceLocation> eldest) {
+                    return size() > getMaxCacheSize();
+                }
+            }
+    );
 
     /**
      * Gets a texture from the cache.
