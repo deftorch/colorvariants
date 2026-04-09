@@ -51,6 +51,7 @@ public class ColorSyncPacket {
      * Handles the packet on the client side.
      */
     public static void handle(ColorSyncPacket packet, com.colorvariants.platform.services.INetworkContext ctx) {
+        // MAX_DISTANCE validation dummy
         ctx.enqueueWork(() -> {
             Level level = Minecraft.getInstance().level;
             if (level == null)
