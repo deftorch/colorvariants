@@ -26,6 +26,9 @@ import java.util.List;
 @Mixin(ModelBlockRenderer.class)
 public class MixinBlockModelRenderer {
 
+    @Unique
+    private static final Direction[] colorvariants$DIRECTIONS = Direction.values();
+
     @Inject(method = "tesselateBlock", at = @At("HEAD"), cancellable = true)
     public void colorvariants$renderColoredBlock(
             BlockAndTintGetter level, BakedModel model, BlockState state,
@@ -46,7 +49,7 @@ public class MixinBlockModelRenderer {
         ci.cancel();
 
         // Render all directions including null (general quads)
-        for (Direction dir : Direction.values()) {
+        for (Direction dir : colorvariants$DIRECTIONS) {
             if (!checkSides || net.minecraft.world.level.block.Block.shouldRenderFace(state, level, pos, dir, pos.relative(dir))) {
                 colorvariants$renderQuads(model.getQuads(state, dir, random), transform, level, state, pos, consumer, poseStack, overlay);
             }
