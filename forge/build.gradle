@@ -56,3 +56,9 @@ jar {
             "MixinConfigs": "${mod_id}.mixins.json,${mod_id}.forge.mixins.json"
     ])
 }
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains:annotations:24.1.0'
+    }
+}

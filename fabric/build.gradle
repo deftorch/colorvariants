@@ -45,3 +45,9 @@ loom {
 test {
     useJUnitPlatform()
 }
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains:annotations:24.1.0'
+    }
+}
