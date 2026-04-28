@@ -1,58 +1,44 @@
 package com.colorvariants.item;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.SharedConstants;
+import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-public class AreaSelectorItemTest {
+class AreaSelectorItemTest {
 
     @BeforeAll
-    public static void setup() {
-        SharedConstants.tryDetectVersion();
+    static void setup() {
+        net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
 
     @Test
-    public void areaSelector_twoPlayersHaveIndependentPositions() {
-        // We bypass the actual item constructor to avoid exceptions
-        AreaSelectorItem item = mock(AreaSelectorItem.class);
-        when(item.getFirstPos(org.mockito.ArgumentMatchers.any())).thenCallRealMethod();
-        when(item.getSecondPos(org.mockito.ArgumentMatchers.any())).thenCallRealMethod();
-        org.mockito.Mockito.doCallRealMethod().when(item).setFirstPos(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
-        org.mockito.Mockito.doCallRealMethod().when(item).setSecondPos(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    void areaSelector_twoPlayersHaveIndependentPositions() {
+        // We bypass the Item constructor entirely by using an existing item (like Items.APPLE)
+        // for the ItemStack, but calling our AreaSelectorItem logic via a mocked/partially mocked instance.
+        // Actually, since AreaSelectorItem is just an Item, and it doesn't use the item reference
+        // in its static-like NBT methods, we can just use any registered item for the ItemStack.
 
-        ItemStack player1Stack = mock(ItemStack.class);
-        ItemStack player2Stack = mock(ItemStack.class);
+        ItemStack player1Stack = new ItemStack(Items.STICK);
+        ItemStack player2Stack = new ItemStack(Items.STICK);
 
-        CompoundTag tag1 = new CompoundTag();
-        CompoundTag tag2 = new CompoundTag();
+        // Create an uninitialized mock of AreaSelectorItem to call the methods
+        AreaSelectorItem item = Mockito.mock(AreaSelectorItem.class);
+        Mockito.doCallRealMethod().when(item).setFirstPos(Mockito.any(ItemStack.class), Mockito.any(BlockPos.class));
+        Mockito.doCallRealMethod().when(item).getFirstPos(Mockito.any(ItemStack.class));
 
-        when(player1Stack.getOrCreateTag()).thenReturn(tag1);
-        when(player2Stack.getOrCreateTag()).thenReturn(tag2);
+        item.setFirstPos(player1Stack, new BlockPos(10, 64, 10));
+        item.setFirstPos(player2Stack, new BlockPos(30, 64, 30));
 
-        BlockPos pos1 = new BlockPos(10, 64, 10);
-        BlockPos pos2 = new BlockPos(30, 64, 30);
-
-        item.setFirstPos(player1Stack, pos1);
-        item.setFirstPos(player2Stack, pos2);
-
-        Optional<BlockPos> retrievedPos1 = item.getFirstPos(player1Stack);
-        Optional<BlockPos> retrievedPos2 = item.getFirstPos(player2Stack);
-
-        assertTrue(retrievedPos1.isPresent(), "Player 1 stack should have first pos");
-        assertTrue(retrievedPos2.isPresent(), "Player 2 stack should have first pos");
-        assertEquals(pos1, retrievedPos1.get(), "Player 1 first position should match");
-        assertEquals(pos2, retrievedPos2.get(), "Player 2 first position should match");
+        assertTrue(item.getFirstPos(player1Stack).isPresent());
+        assertTrue(item.getFirstPos(player2Stack).isPresent());
+        assertEquals(new BlockPos(10, 64, 10), item.getFirstPos(player1Stack).get());
+        assertEquals(new BlockPos(30, 64, 30), item.getFirstPos(player2Stack).get());
     }
 }
