@@ -4,55 +4,49 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.SharedConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class AreaSelectorItemTest {
 
     @BeforeAll
     public static void setup() {
-        SharedConstants.tryDetectVersion();
+        net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
 
     @Test
-    public void areaSelector_twoPlayersHaveIndependentPositions() {
-        // We bypass the actual item constructor to avoid exceptions
-        AreaSelectorItem item = mock(AreaSelectorItem.class);
-        when(item.getFirstPos(org.mockito.ArgumentMatchers.any())).thenCallRealMethod();
-        when(item.getSecondPos(org.mockito.ArgumentMatchers.any())).thenCallRealMethod();
-        org.mockito.Mockito.doCallRealMethod().when(item).setFirstPos(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
-        org.mockito.Mockito.doCallRealMethod().when(item).setSecondPos(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    void areaSelector_twoPlayersHaveIndependentPositions() {
+        // Just mock ItemStack and pass a mocked item to it. Wait!
+        // We can just create a real ItemStack but with a real Item to avoid NPEs!
+        Item realItem = net.minecraft.world.item.Items.STICK;
+        ItemStack player1Stack = new ItemStack(realItem);
+        ItemStack player2Stack = new ItemStack(realItem);
 
-        ItemStack player1Stack = mock(ItemStack.class);
-        ItemStack player2Stack = mock(ItemStack.class);
+        // Wait, what if the memory hint is about testing something else or the memory hint is just how to avoid it!
+        // We can use Mockito.mock(Item.class) but then we have to mock all the ItemStack internal calls to Item.
+
+        // Let's just spy the stack and mock the tag methods so it never calls the Item methods:
+        Item mockedItem = Mockito.mock(Item.class);
+        ItemStack stack1 = Mockito.mock(ItemStack.class);
+        ItemStack stack2 = Mockito.mock(ItemStack.class);
 
         CompoundTag tag1 = new CompoundTag();
         CompoundTag tag2 = new CompoundTag();
+        Mockito.when(stack1.getOrCreateTag()).thenReturn(tag1);
+        Mockito.when(stack2.getOrCreateTag()).thenReturn(tag2);
 
-        when(player1Stack.getOrCreateTag()).thenReturn(tag1);
-        when(player2Stack.getOrCreateTag()).thenReturn(tag2);
+        AreaSelectorItem item = Mockito.mock(AreaSelectorItem.class);
+        Mockito.doCallRealMethod().when(item).setFirstPos(Mockito.any(), Mockito.any());
+        Mockito.doCallRealMethod().when(item).getFirstPos(Mockito.any());
 
-        BlockPos pos1 = new BlockPos(10, 64, 10);
-        BlockPos pos2 = new BlockPos(30, 64, 30);
+        item.setFirstPos(stack1, new BlockPos(10, 64, 10));
+        item.setFirstPos(stack2, new BlockPos(30, 64, 30));
 
-        item.setFirstPos(player1Stack, pos1);
-        item.setFirstPos(player2Stack, pos2);
-
-        Optional<BlockPos> retrievedPos1 = item.getFirstPos(player1Stack);
-        Optional<BlockPos> retrievedPos2 = item.getFirstPos(player2Stack);
-
-        assertTrue(retrievedPos1.isPresent(), "Player 1 stack should have first pos");
-        assertTrue(retrievedPos2.isPresent(), "Player 2 stack should have first pos");
-        assertEquals(pos1, retrievedPos1.get(), "Player 1 first position should match");
-        assertEquals(pos2, retrievedPos2.get(), "Player 2 first position should match");
+        assertEquals(new BlockPos(10, 64, 10), item.getFirstPos(stack1).orElseThrow());
+        assertEquals(new BlockPos(30, 64, 30), item.getFirstPos(stack2).orElseThrow());
     }
 }
