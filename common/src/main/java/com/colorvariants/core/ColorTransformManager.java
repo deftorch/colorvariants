@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
@@ -22,7 +23,7 @@ public class ColorTransformManager extends SavedData {
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorTransformManager.class);
     private static final String DATA_NAME = "colorvariants_transforms";
     
-    private final Map<BlockPos, ColorTransform> transforms = new HashMap<>();
+    private final Map<BlockPos, ColorTransform> transforms = new ConcurrentHashMap<>();
     
     public ColorTransformManager() {
     }
