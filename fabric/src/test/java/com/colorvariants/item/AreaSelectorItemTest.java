@@ -1,58 +1,38 @@
 package com.colorvariants.item;
 
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.SharedConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.mockito.Mockito;
 
-public class AreaSelectorItemTest {
+class AreaSelectorItemTest {
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         SharedConstants.tryDetectVersion();
-        net.minecraft.server.Bootstrap.bootStrap();
+        Bootstrap.bootStrap();
     }
 
     @Test
-    public void areaSelector_twoPlayersHaveIndependentPositions() {
-        // We bypass the actual item constructor to avoid exceptions
-        AreaSelectorItem item = mock(AreaSelectorItem.class);
-        when(item.getFirstPos(org.mockito.ArgumentMatchers.any())).thenCallRealMethod();
-        when(item.getSecondPos(org.mockito.ArgumentMatchers.any())).thenCallRealMethod();
-        org.mockito.Mockito.doCallRealMethod().when(item).setFirstPos(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
-        org.mockito.Mockito.doCallRealMethod().when(item).setSecondPos(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    void areaSelector_twoPlayersHaveIndependentPositions() {
+        Item mockItem = Mockito.mock(AreaSelectorItem.class, Mockito.CALLS_REAL_METHODS);
+        ItemStack player1Stack = new ItemStack(mockItem);
+        ItemStack player2Stack = new ItemStack(mockItem);
+        AreaSelectorItem item = (AreaSelectorItem) mockItem;
 
-        ItemStack player1Stack = mock(ItemStack.class);
-        ItemStack player2Stack = mock(ItemStack.class);
+        item.setFirstPos(player1Stack, new BlockPos(10, 64, 10));
+        item.setFirstPos(player2Stack, new BlockPos(30, 64, 30));
 
-        CompoundTag tag1 = new CompoundTag();
-        CompoundTag tag2 = new CompoundTag();
-
-        when(player1Stack.getOrCreateTag()).thenReturn(tag1);
-        when(player2Stack.getOrCreateTag()).thenReturn(tag2);
-
-        BlockPos pos1 = new BlockPos(10, 64, 10);
-        BlockPos pos2 = new BlockPos(30, 64, 30);
-
-        item.setFirstPos(player1Stack, pos1);
-        item.setFirstPos(player2Stack, pos2);
-
-        Optional<BlockPos> retrievedPos1 = item.getFirstPos(player1Stack);
-        Optional<BlockPos> retrievedPos2 = item.getFirstPos(player2Stack);
-
-        assertTrue(retrievedPos1.isPresent(), "Player 1 stack should have first pos");
-        assertTrue(retrievedPos2.isPresent(), "Player 2 stack should have first pos");
-        assertEquals(pos1, retrievedPos1.get(), "Player 1 first position should match");
-        assertEquals(pos2, retrievedPos2.get(), "Player 2 first position should match");
+        assertTrue(item.getFirstPos(player1Stack).isPresent());
+        assertTrue(item.getFirstPos(player2Stack).isPresent());
+        assertEquals(new BlockPos(10, 64, 10), item.getFirstPos(player1Stack).get());
+        assertEquals(new BlockPos(30, 64, 30), item.getFirstPos(player2Stack).get());
     }
 }
